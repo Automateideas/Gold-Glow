@@ -1,8 +1,8 @@
 # Gold & Glow — E-commerce Store
 
 A modern, fully-responsive e-commerce website for **Gold & Glow** herbal cosmetics —
-_"precised care, poetic glow."_ Built with **Next.js 15 (App Router)**, **TypeScript**,
-**Tailwind CSS**, and **shadcn/ui**-style components.
+_"precised care, poetic glow."_ Built with **Next.js 16 (App Router, Turbopack)**,
+**React 19**, **TypeScript**, **Tailwind CSS v4**, and **shadcn/ui**-style components.
 
 ## ✨ Features
 
@@ -75,8 +75,13 @@ public/products/        # Product imagery
 
 ## 🛠 Tech
 
-Next.js 15 · React 19 · TypeScript · Tailwind CSS 3.4 · Radix UI · lucide-react ·
-sonner · class-variance-authority.
+Next.js 16 (Turbopack) · React 19 · TypeScript 5.9 · Tailwind CSS v4 · Radix UI ·
+lucide-react · sonner · class-variance-authority.
+
+Tailwind v4 is configured the documented compatibility way: `app/globals.css` uses
+`@import "tailwindcss"` + `@config "../tailwind.config.ts"`, PostCSS uses
+`@tailwindcss/postcss`, and animation utilities come from `tw-animate-css`
+(the v4 successor to `tailwindcss-animate`).
 
 ## 📝 Notes
 

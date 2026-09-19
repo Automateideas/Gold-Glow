@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Instagram, Facebook, Youtube, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+import { InstagramIcon, FacebookIcon, YoutubeIcon } from "@/components/social-icons";
 import { Logo } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -78,7 +79,7 @@ export function SiteFooter() {
             glow — kind to skin, made in India.
           </p>
           <div className="mt-5 flex gap-2">
-            {[Instagram, Facebook, Youtube].map((Icon, i) => (
+            {[InstagramIcon, FacebookIcon, YoutubeIcon].map((Icon, i) => (
               <a
                 key={i}
                 href="#"

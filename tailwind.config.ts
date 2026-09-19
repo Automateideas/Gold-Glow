@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -93,7 +93,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  // Animation utilities (animate-in / slide / fade) come from `tw-animate-css`,
+  // imported in app/globals.css — the Tailwind v4 replacement for tailwindcss-animate.
+  plugins: [],
 };
 
 export default config;
