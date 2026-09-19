@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 50% 99%;
+    --foreground: 340 25% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 340 25% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 25% 14%;
+
+    /* Gold & Glow brand magenta */
+    --primary: 335 82% 46%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 336 44% 96%;
+    --secondary-foreground: 335 60% 30%;
+
+    --muted: 336 30% 96%;
+    --muted-foreground: 340 10% 44%;
+
+    --accent: 336 60% 95%;
+    --accent-foreground: 335 60% 30%;
+
+    /* soft champagne gold */
+    --gold: 40 46% 52%;
+    --gold-foreground: 40 40% 16%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 336 24% 90%;
+    --input: 336 24% 90%;
+    --ring: 335 82% 46%;
+
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 340 30% 7%;
+    --foreground: 336 20% 96%;
+    --card: 340 26% 10%;
+    --card-foreground: 336 20% 96%;
+    --popover: 340 26% 10%;
+    --popover-foreground: 336 20% 96%;
+    --primary: 335 85% 62%;
+    --primary-foreground: 340 40% 8%;
+    --secondary: 340 20% 16%;
+    --secondary-foreground: 336 20% 96%;
+    --muted: 340 18% 16%;
+    --muted-foreground: 336 12% 66%;
+    --accent: 340 20% 18%;
+    --accent-foreground: 336 20% 96%;
+    --gold: 40 52% 60%;
+    --gold-foreground: 40 40% 10%;
+    --destructive: 0 62% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 18% 20%;
+    --input: 340 18% 22%;
+    --ring: 335 85% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .gold-text {
+    background: linear-gradient(
+      100deg,
+      hsl(40 55% 42%),
+      hsl(44 70% 62%),
+      hsl(38 50% 40%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand-gradient {
+    background: linear-gradient(
+      120deg,
+      hsl(335 82% 46%),
+      hsl(320 75% 52%),
+      hsl(350 78% 55%)
+    );
+  }
+  .glass {
+    background: hsl(0 0% 100% / 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Utility marquee track */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
