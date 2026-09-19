@@ -3,7 +3,6 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { CheckCircle2, Lock, Tag, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart-context";
@@ -16,7 +15,6 @@ import { Separator } from "@/components/ui/separator";
 
 export default function CheckoutPage() {
   const { detailed, subtotal, savings, clear, count } = useCart();
-  const router = useRouter();
   const [coupon, setCoupon] = React.useState("");
   const [applied, setApplied] = React.useState(false);
   const [placing, setPlacing] = React.useState(false);

@@ -22,6 +22,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://goldandglow.in"),
   title: {
     default: "Gold & Glow — Precised Care, Poetic Glow",
     template: "%s · Gold & Glow",
@@ -52,8 +53,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${playfair.variable}`}>
-      <body className="min-h-screen font-sans">
+    <html
+      lang="en"
+      className={`${poppins.variable} ${playfair.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen font-sans" suppressHydrationWarning>
         <CartProvider>
           <SiteHeader />
           <main>{children}</main>
