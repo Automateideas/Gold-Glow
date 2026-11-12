@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
-import { CartButton } from "@/components/cart-button";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -43,8 +42,9 @@ export function SiteHeader() {
       <div className="brand-gradient text-primary-foreground">
         <div className="container flex h-9 items-center justify-center gap-2 overflow-hidden text-center text-xs font-medium">
           <span className="truncate">
-            ✨ Free shipping over ₹599 · Flat 20% off your first order with code{" "}
-            <span className="font-bold">GLOW20</span>
+            ✨ Now available on{" "}
+            <span className="font-bold">Amazon · Flipkart · Meesho</span> — shop from
+            your favourite app
           </span>
         </div>
       </div>
@@ -114,18 +114,14 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              aria-label="Search"
-              className="hidden sm:inline-flex"
-            >
+            <Button variant="ghost" size="icon" asChild aria-label="Search">
               <Link href="/shop">
                 <Search className="h-5 w-5" />
               </Link>
             </Button>
-            <CartButton />
+            <Button size="sm" asChild className="hidden sm:inline-flex">
+              <Link href="/shop">Shop</Link>
+            </Button>
           </div>
         </div>
       </header>

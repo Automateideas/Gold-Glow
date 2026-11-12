@@ -2,14 +2,12 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Minus, Plus, ShoppingBag, Check, Truck, RefreshCw, ShieldCheck, Heart } from "lucide-react";
-import { toast } from "sonner";
+import { Check, Truck, Store, ShieldCheck } from "lucide-react";
 import { type Product } from "@/lib/products";
-import { useCart } from "@/lib/cart-context";
 import { formatINR, cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/star-rating";
+import { MarketplaceButtons } from "@/components/marketplace-buttons";
 import {
   Accordion,
   AccordionItem,
@@ -18,26 +16,12 @@ import {
 } from "@/components/ui/accordion";
 
 export function ProductDetail({ product }: { product: Product }) {
-  const { add, setOpen } = useCart();
   const [active, setActive] = React.useState(0);
-  const [qty, setQty] = React.useState(1);
 
   const off =
     product.compareAt && product.compareAt > product.price
       ? Math.round((1 - product.price / product.compareAt) * 100)
       : 0;
-
-  function handleAdd(buyNow = false) {
-    add(product.id, qty);
-    if (buyNow) {
-      setOpen(true);
-    } else {
-      toast.success(`${product.name} added to bag`, {
-        description: `Qty ${qty} · ${formatINR(product.price * qty)}`,
-        action: { label: "View bag", onClick: () => setOpen(true) },
-      });
-    }
-  }
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
@@ -88,7 +72,7 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Buy box */}
+      {/* Info */}
       <div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">
@@ -124,7 +108,7 @@ export function ProductDetail({ product }: { product: Product }) {
           )}
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
-          {product.size} · Inclusive of all taxes
+          {product.size} · Indicative MRP — final price on the marketplace
         </p>
 
         <p className="mt-5 text-sm leading-relaxed text-foreground/90">
@@ -141,52 +125,23 @@ export function ProductDetail({ product }: { product: Product }) {
           ))}
         </ul>
 
-        {/* Qty + actions */}
-        <div className="mt-7 flex flex-wrap items-center gap-3">
-          <div className="flex items-center rounded-full border">
-            <button
-              onClick={() => setQty((q) => Math.max(1, q - 1))}
-              className="grid h-11 w-11 place-items-center rounded-l-full transition-colors hover:bg-accent"
-              aria-label="Decrease quantity"
-            >
-              <Minus className="h-4 w-4" />
-            </button>
-            <span className="w-10 text-center font-medium">{qty}</span>
-            <button
-              onClick={() => setQty((q) => Math.min(99, q + 1))}
-              className="grid h-11 w-11 place-items-center rounded-r-full transition-colors hover:bg-accent"
-              aria-label="Increase quantity"
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </div>
-          <Button size="lg" className="flex-1" onClick={() => handleAdd(false)}>
-            <ShoppingBag className="h-4 w-4" /> Add to bag
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-12 w-12"
-            aria-label="Add to wishlist"
-          >
-            <Heart className="h-5 w-5" />
-          </Button>
+        {/* Where to buy */}
+        <div className="mt-7">
+          <p className="mb-3 text-sm font-semibold">
+            Where to buy
+            <span className="ml-2 font-normal text-muted-foreground">
+              — shop from your favourite app
+            </span>
+          </p>
+          <MarketplaceButtons product={product} />
         </div>
-        <Button
-          size="lg"
-          variant="gold"
-          className="mt-3 w-full"
-          onClick={() => handleAdd(true)}
-        >
-          Buy it now
-        </Button>
 
         {/* Trust badges */}
         <div className="mt-6 grid grid-cols-3 gap-2 rounded-2xl border bg-secondary/30 p-4 text-center">
           {[
-            { icon: Truck, label: "Free ship ₹599+" },
-            { icon: RefreshCw, label: "Easy returns" },
-            { icon: ShieldCheck, label: "100% authentic" },
+            { icon: ShieldCheck, label: "100% Authentic" },
+            { icon: Store, label: "Trusted Sellers" },
+            { icon: Truck, label: "Pan-India Delivery" },
           ].map((t) => (
             <div key={t.label} className="flex flex-col items-center gap-1.5">
               <t.icon className="h-5 w-5 text-primary" />

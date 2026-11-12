@@ -35,10 +35,26 @@ const values = [
 ];
 
 const ingredients = [
-  { name: "Vitamin-C", use: "Brightens & evens tone", img: "/products/vitamin-c-facewash.jpg" },
-  { name: "Aloe Vera", use: "Soothes & hydrates", img: "/products/aloe-gel.jpg" },
-  { name: "Honey & Almond", use: "Nourishes & repairs", img: "/products/honey-almond-cream.jpg" },
-  { name: "Rose Water", use: "Tones & refreshes", img: "/products/rose-water.jpg" },
+  {
+    name: "Vitamin-C",
+    use: "Brightens & evens tone",
+    img: "/products/vitamin-c-facewash.jpg",
+  },
+  {
+    name: "Aloe Vera",
+    use: "Soothes & hydrates",
+    img: "/products/aloe-gel.jpg",
+  },
+  {
+    name: "Honey & Almond",
+    use: "Nourishes & repairs",
+    img: "/products/honey-almond-cream.jpg",
+  },
+  {
+    name: "Rose Water",
+    use: "Tones & refreshes",
+    img: "/products/rose-water.jpg",
+  },
 ];
 
 export default function AboutPage() {
@@ -56,15 +72,16 @@ export default function AboutPage() {
               Precised care, <span className="gold-text">poetic glow.</span>
             </h1>
             <p className="mt-5 text-muted-foreground">
-              Gold &amp; Glow began with a simple belief — that skincare can be both
-              effective and beautiful. We blend time-honoured herbal ingredients with
-              modern, skin-friendly formulations to create everyday essentials that
-              care for your skin precisely, and leave it glowing poetically.
+              Gold &amp; Glow began with a simple belief — that skincare can be
+              both effective and beautiful. We blend time-honoured herbal
+              ingredients with modern, skin-friendly formulations to create
+              everyday essentials that care for your skin precisely, and leave
+              it glowing poetically.
             </p>
             <p className="mt-4 text-muted-foreground">
-              From our brightening Vitamin-C face wash to cooling Blossom talc and
-              pure rose water, each product is crafted to fit effortlessly into your
-              routine — clean, considered and kind.
+              From our brightening Vitamin-C face wash to cooling Blossom talc
+              and pure rose water, each product is crafted to fit effortlessly
+              into your routine — clean, considered and kind.
             </p>
             <Button className="mt-8" asChild>
               <Link href="/shop">
@@ -72,10 +89,11 @@ export default function AboutPage() {
               </Link>
             </Button>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border">
+          <div className="relative aspect-4/3 overflow-hidden rounded-3xl border">
             <Image
               src="/products/talc-trio-banner.jpg"
               alt="Gold & Glow collection"
+              loading="eager"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
@@ -93,7 +111,10 @@ export default function AboutPage() {
         />
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {values.map((v) => (
-            <div key={v.title} className="rounded-2xl border bg-card p-6 shadow-sm">
+            <div
+              key={v.title}
+              className="rounded-2xl border bg-card p-6 shadow-sm"
+            >
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10">
                 <v.icon className="h-6 w-6 text-primary" />
               </div>
@@ -122,6 +143,7 @@ export default function AboutPage() {
                 <Image
                   src={ing.img}
                   alt={ing.name}
+                  loading="eager"
                   fill
                   sizes="200px"
                   className="object-contain p-3 transition-transform duration-500 group-hover:scale-110"
@@ -143,9 +165,14 @@ export default function AboutPage() {
             Ready to glow?
           </h2>
           <p className="mx-auto mt-3 max-w-md text-primary-foreground/90">
-            Join thousands who&apos;ve made Gold &amp; Glow part of their daily ritual.
+            Join thousands who&apos;ve made Gold &amp; Glow part of their daily
+            ritual.
           </p>
-          <Button variant="gold" size="lg" className="mt-8" asChild>
+          <Button
+            size="lg"
+            className="mt-8"
+            asChild
+          >
             <Link href="/shop">Shop the collection</Link>
           </Button>
         </div>

@@ -27,12 +27,12 @@ const columns = [
     ],
   },
   {
-    title: "Help",
+    title: "Where to Buy",
     links: [
-      { label: "Shipping & Returns", href: "/contact" },
-      { label: "Track Order", href: "/contact" },
-      { label: "FAQs", href: "/contact" },
-      { label: "Privacy Policy", href: "/contact" },
+      { label: "Amazon", href: "https://www.amazon.in/s?k=Gold+and+Glow+cosmetics" },
+      { label: "Flipkart", href: "https://www.flipkart.com/search?q=Gold%20and%20Glow%20cosmetics" },
+      { label: "Meesho", href: "https://www.meesho.com/search?q=Gold%20and%20Glow" },
+      { label: "Contact & FAQs", href: "/contact" },
     ],
   },
 ];
@@ -48,8 +48,8 @@ export function SiteFooter() {
               Join the Glow Club
             </h3>
             <p className="mt-2 max-w-md text-sm text-primary-foreground/90">
-              Be first to know about new launches, skincare rituals and members-only
-              offers. Get 20% off your first order.
+              Be first to know about new launches, skincare rituals and where to find
+              our products across your favourite shopping apps.
             </p>
           </div>
           <form className="flex w-full flex-col gap-3 sm:flex-row">
@@ -61,7 +61,6 @@ export function SiteFooter() {
             />
             <Button
               type="submit"
-              variant="gold"
               size="lg"
               className="shrink-0 whitespace-nowrap"
             >

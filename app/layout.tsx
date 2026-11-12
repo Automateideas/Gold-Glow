@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/lib/cart-context";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { CartDrawer } from "@/components/cart-drawer";
+import { SiteChrome } from "@/components/site-chrome";
 import { Toaster } from "sonner";
 
 const poppins = Poppins({
@@ -59,17 +56,12 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen font-sans" suppressHydrationWarning>
-        <CartProvider>
-          <SiteHeader />
-          <main>{children}</main>
-          <SiteFooter />
-          <CartDrawer />
-          <Toaster
-            position="bottom-right"
-            richColors
-            toastOptions={{ style: { borderRadius: "14px" } }}
-          />
-        </CartProvider>
+        <SiteChrome>{children}</SiteChrome>
+        <Toaster
+          position="bottom-right"
+          richColors
+          toastOptions={{ style: { borderRadius: "14px" } }}
+        />
       </body>
     </html>
   );

@@ -1,30 +1,16 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
-import { toast } from "sonner";
 import { type Product } from "@/lib/products";
-import { useCart } from "@/lib/cart-context";
-import { formatINR, cn } from "@/lib/utils";
+import { formatINR } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/star-rating";
+import { MarketplaceChips } from "@/components/marketplace-buttons";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { add, setOpen } = useCart();
   const off =
     product.compareAt && product.compareAt > product.price
       ? Math.round((1 - product.price / product.compareAt) * 100)
       : 0;
-
-  function handleAdd() {
-    add(product.id);
-    toast.success(`${product.name} added to bag`, {
-      description: `${product.size} · ${formatINR(product.price)}`,
-      action: { label: "View bag", onClick: () => setOpen(true) },
-    });
-  }
 
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
@@ -54,7 +40,7 @@ export function ProductCard({ product }: { product: Product }) {
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-primary/80">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-primary/90">
           {product.category}
         </p>
         <Link href={`/product/${product.slug}`} className="mt-1">
@@ -81,14 +67,11 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
             <span className="text-[0.7rem] text-muted-foreground">{product.size}</span>
           </div>
-          <Button
-            size="icon"
-            onClick={handleAdd}
-            aria-label={`Add ${product.name} to bag`}
-            className={cn("h-10 w-10 shrink-0")}
-          >
-            <ShoppingBag className="h-4 w-4" />
-          </Button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between border-t pt-3">
+          <span className="text-[0.7rem] text-muted-foreground">Buy it on</span>
+          <MarketplaceChips product={product} />
         </div>
       </div>
     </div>

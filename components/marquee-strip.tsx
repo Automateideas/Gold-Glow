@@ -1,4 +1,4 @@
-import { Leaf, ShieldCheck, Sparkles, Heart, FlaskConical, Truck } from "lucide-react";
+import { Leaf, ShieldCheck, Sparkles, Heart, FlaskConical, Store } from "lucide-react";
 
 const items = [
   { icon: Leaf, label: "Herbal Ingredients" },
@@ -6,7 +6,7 @@ const items = [
   { icon: Heart, label: "Cruelty-Free" },
   { icon: Sparkles, label: "Paraben-Free" },
   { icon: FlaskConical, label: "Skin-Friendly pH" },
-  { icon: Truck, label: "Free Shipping ₹599+" },
+  { icon: Store, label: "On Amazon · Flipkart · Meesho" },
 ];
 
 export function MarqueeStrip() {

@@ -18,16 +18,16 @@ import { BRAND } from "@/lib/products";
 
 const faqs = [
   {
-    q: "How long does shipping take?",
-    a: "Orders are dispatched within 24–48 hours and typically arrive in 3–6 business days across India. You'll receive tracking details by email.",
+    q: "Where can I buy Gold & Glow products?",
+    a: "Our full range is available on Amazon, Flipkart and Meesho. Just open any product on this site and tap the 'Buy on…' button for your preferred app.",
   },
   {
-    q: "Do you offer free shipping?",
-    a: "Yes! Shipping is free on all orders above ₹599. Orders below that carry a flat ₹49 shipping fee.",
+    q: "How do shipping and returns work?",
+    a: "Shipping, delivery timelines and returns are handled by the marketplace you order from (Amazon, Flipkart or Meesho) under their standard policies.",
   },
   {
-    q: "What is your return policy?",
-    a: "Unopened products can be returned within 7 days of delivery for a full refund. Reach out to our care team to start a return.",
+    q: "Are the products on the marketplaces genuine?",
+    a: "Yes — always buy from our official Gold & Glow listings on Amazon, Flipkart and Meesho to be sure you're getting 100% authentic products.",
   },
   {
     q: "Are your products cruelty-free?",

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { products, CATEGORIES, type Category } from "@/lib/products";
+import { CATEGORIES, type Category, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,13 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 const ALL = "All" as const;
 
-export function ShopClient({ initialCategory }: { initialCategory?: string }) {
+export function ShopClient({
+  initialCategory,
+  allProducts,
+}: {
+  initialCategory?: string;
+  allProducts: Product[];
+}) {
   const validInitial =
     initialCategory &&
     CATEGORIES.some((c) => c.name === initialCategory)
@@ -33,7 +39,7 @@ export function ShopClient({ initialCategory }: { initialCategory?: string }) {
   const [query, setQuery] = React.useState("");
 
   const filtered = React.useMemo(() => {
-    let list = products.slice();
+    let list = allProducts.slice();
     if (category !== ALL) list = list.filter((p) => p.category === category);
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -61,7 +67,7 @@ export function ShopClient({ initialCategory }: { initialCategory?: string }) {
         );
     }
     return list;
-  }, [category, sort, query]);
+  }, [category, sort, query, allProducts]);
 
   const chips: (Category | typeof ALL)[] = [ALL, ...CATEGORIES.map((c) => c.name)];
 

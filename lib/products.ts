@@ -6,6 +6,8 @@ export type Category =
   | "Toner & Mist"
   | "Aloe Gel";
 
+export type Marketplace = "amazon" | "flipkart" | "meesho";
+
 export type Product = {
   id: string;
   slug: string;
@@ -27,6 +29,13 @@ export type Product = {
   benefits: string[];
   howToUse: string;
   skinType: string;
+  /**
+   * Direct marketplace product URLs. Leave a marketplace out (or set "#") and the
+   * site falls back to that marketplace's SEARCH page for this product, so every
+   * button works even before you have the exact listing link. Paste the real
+   * product URLs here whenever your listings go live.
+   */
+  links?: Partial<Record<Marketplace, string>>;
 };
 
 // Brand
@@ -433,6 +442,48 @@ export const products: Product[] = [
     skinType: "Dry & dehydrated skin",
   },
 ];
+
+export const MARKETPLACES: {
+  id: Marketplace;
+  name: string;
+  color: string;
+  logo: string;
+  search: (q: string) => string;
+}[] = [
+  {
+    id: "amazon",
+    name: "Amazon",
+    color: "#FF9900",
+    logo: "/marketplaces/amazon.svg",
+    search: (q) => `https://www.amazon.in/s?k=${encodeURIComponent(q)}`,
+  },
+  {
+    id: "flipkart",
+    name: "Flipkart",
+    color: "#2874F0",
+    logo: "/marketplaces/flipkart.svg",
+    search: (q) => `https://www.flipkart.com/search?q=${encodeURIComponent(q)}`,
+  },
+  {
+    id: "meesho",
+    name: "Meesho",
+    color: "#F43397",
+    logo: "/marketplaces/meesho.png",
+    search: (q) => `https://www.meesho.com/search?q=${encodeURIComponent(q)}`,
+  },
+];
+
+/**
+ * Resolve the buy link for a product on a marketplace. Uses the explicit product
+ * URL if set in `product.links`, otherwise falls back to a brand+product search
+ * on that marketplace so the button always leads somewhere useful.
+ */
+export function buyUrl(product: Product, marketplace: Marketplace): string {
+  const explicit = product.links?.[marketplace];
+  if (explicit && explicit !== "#") return explicit;
+  const mk = MARKETPLACES.find((m) => m.id === marketplace)!;
+  return mk.search(`${BRAND.name} ${product.name}`);
+}
 
 export function getProduct(slug: string) {
   return products.find((p) => p.slug === slug);

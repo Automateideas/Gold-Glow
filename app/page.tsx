@@ -1,7 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Star, Quote, Droplets, Sun, Wind } from "lucide-react";
-import { products, CATEGORIES } from "@/lib/products";
+import {
+  ArrowRight,
+  Sparkles,
+  Star,
+  Quote,
+  Droplets,
+  Sun,
+  Wind,
+} from "lucide-react";
+import { CATEGORIES } from "@/lib/products";
+import { getAllProducts } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product-card";
@@ -9,8 +18,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { StarRating } from "@/components/star-rating";
 
-const bestsellers = products.filter((p) => p.bestSeller).slice(0, 4);
-const newIn = products.filter((p) => p.new || p.rating >= 4.7).slice(0, 8);
+export const dynamic = "force-dynamic";
 
 const reviews = [
   {
@@ -33,7 +41,11 @@ const reviews = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const all = await getAllProducts();
+  const bestsellers = all.filter((p) => p.bestSeller).slice(0, 4);
+  const newIn = all.filter((p) => p.new || p.rating >= 4.7).slice(0, 8);
+
   return (
     <>
       {/* HERO */}
@@ -46,13 +58,13 @@ export default function HomePage() {
               <Sparkles className="h-3.5 w-3.5" /> New season glow drop
             </Badge>
             <h1 className="font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Precised care,{" "}
-              <span className="gold-text">poetic</span>{" "}
+              Precised care, <span className="gold-text">poetic</span>{" "}
               <span className="text-primary">glow.</span>
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-              Herbal-inspired skincare and body care that treats your skin gently
-              and lights it up beautifully. Clean formulas, radiant results.
+              Herbal-inspired skincare and body care that treats your skin
+              gently and lights it up beautifully. Clean formulas, radiant
+              results.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button size="lg" asChild>
@@ -64,30 +76,42 @@ export default function HomePage() {
                 <Link href="/shop?category=Face+Wash">Explore face care</Link>
               </Button>
             </div>
+            <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+              <span>Available on</span>
+              <span className="font-semibold text-foreground">Amazon</span>
+              <span className="text-border">·</span>
+              <span className="font-semibold text-foreground">Flipkart</span>
+              <span className="text-border">·</span>
+              <span className="font-semibold text-foreground">Meesho</span>
+            </p>
             <div className="mt-8 flex items-center gap-4">
               <div className="flex -space-x-3">
-                {["aloe-cream", "rose-water", "honey-almond-cream", "vitamin-c-facewash"].map(
-                  (img) => (
-                    <div
-                      key={img}
-                      className="h-11 w-11 overflow-hidden rounded-full border-2 border-background bg-secondary"
-                    >
-                      <Image
-                        src={`/products/${img}.jpg`}
-                        alt=""
-                        width={44}
-                        height={44}
-                        className="h-full w-full object-contain p-0.5"
-                      />
-                    </div>
-                  )
-                )}
+                {[
+                  "aloe-cream",
+                  "rose-water",
+                  "honey-almond-cream",
+                  "vitamin-c-facewash",
+                ].map((img) => (
+                  <div
+                    key={img}
+                    className="h-11 w-11 overflow-hidden rounded-full border-2 border-background bg-secondary"
+                  >
+                    <Image
+                      src={`/products/${img}.jpg`}
+                      loading="eager"
+                      alt=""
+                      width={44}
+                      height={44}
+                      className="h-full w-full object-contain p-0.5"
+                    />
+                  </div>
+                ))}
               </div>
               <div>
                 <StarRating rating={5} />
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">4.8/5</span> from
-                  2,300+ happy customers
+                  <span className="font-semibold text-foreground">4.8/5</span>{" "}
+                  from 2,300+ happy customers
                 </p>
               </div>
             </div>
@@ -114,13 +138,19 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold">Brightening</p>
-                    <p className="text-[0.65rem] text-muted-foreground">Vitamin-C rich</p>
+                    <p className="text-[0.65rem] text-muted-foreground">
+                      Vitamin-C rich
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="absolute -right-2 bottom-12 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-right-6">
-                <p className="text-xs font-semibold text-primary">★ Bestseller</p>
-                <p className="text-[0.65rem] text-muted-foreground">Loved by 2k+</p>
+                <p className="text-xs font-semibold text-primary">
+                  ★ Bestseller
+                </p>
+                <p className="text-[0.65rem] text-muted-foreground">
+                  Loved by 2k+
+                </p>
               </div>
             </div>
           </div>
@@ -154,8 +184,12 @@ export default function HomePage() {
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight">{cat.name}</p>
-                <p className="text-[0.7rem] text-muted-foreground">{cat.blurb}</p>
+                <p className="text-sm font-semibold leading-tight">
+                  {cat.name}
+                </p>
+                <p className="text-[0.7rem] text-muted-foreground">
+                  {cat.blurb}
+                </p>
               </div>
             </Link>
           ))}
@@ -170,7 +204,11 @@ export default function HomePage() {
             title="Bestsellers"
             description="The cult favourites our community keeps coming back for."
           />
-          <Button variant="ghost" asChild className="hidden shrink-0 sm:inline-flex">
+          <Button
+            variant="ghost"
+            asChild
+            className="hidden shrink-0 sm:inline-flex"
+          >
             <Link href="/shop">
               View all <ArrowRight className="h-4 w-4" />
             </Link>
@@ -188,13 +226,16 @@ export default function HomePage() {
         <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-secondary via-background to-accent">
           <div className="grid items-center gap-6 lg:grid-cols-2">
             <div className="p-8 sm:p-12">
-              <Badge variant="gold" className="mb-4">Icy-touch collection</Badge>
+              <Badge variant="gold" className="mb-4">
+                Icy-touch collection
+              </Badge>
               <h3 className="font-serif text-3xl font-bold sm:text-4xl">
                 Stay fresh, all day long
               </h3>
               <p className="mt-3 max-w-md text-muted-foreground">
                 Our Blossom talc range cools on contact and keeps you feeling
-                confident — with rose, fresh floral and long-lasting deo freshness.
+                confident — with rose, fresh floral and long-lasting deo
+                freshness.
               </p>
               <div className="mt-6 flex flex-wrap gap-4">
                 {[
@@ -202,7 +243,10 @@ export default function HomePage() {
                   { icon: Sun, label: "All-day dry" },
                   { icon: Sparkles, label: "Floral scent" },
                 ].map((f) => (
-                  <div key={f.label} className="flex items-center gap-2 text-sm font-medium">
+                  <div
+                    key={f.label}
+                    className="flex items-center gap-2 text-sm font-medium"
+                  >
                     <f.icon className="h-4 w-4 text-primary" />
                     {f.label}
                   </div>
@@ -295,7 +339,9 @@ export default function HomePage() {
             >
               <Quote className="h-7 w-7 text-primary/30" />
               <StarRating rating={5} className="mt-3" />
-              <p className="mt-3 flex-1 text-sm text-foreground/90">&ldquo;{r.text}&rdquo;</p>
+              <p className="mt-3 flex-1 text-sm text-foreground/90">
+                &ldquo;{r.text}&rdquo;
+              </p>
               <div className="mt-5 border-t pt-4">
                 <p className="text-sm font-semibold">{r.name}</p>
                 <p className="text-xs text-muted-foreground">

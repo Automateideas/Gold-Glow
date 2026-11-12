@@ -1,25 +1,50 @@
-# Gold & Glow — E-commerce Store
+# Gold & Glow — Product Catalog
 
-A modern, fully-responsive e-commerce website for **Gold & Glow** herbal cosmetics —
-_"precised care, poetic glow."_ Built with **Next.js 16 (App Router, Turbopack)**,
-**React 19**, **TypeScript**, **Tailwind CSS v4**, and **shadcn/ui**-style components.
+A modern, fully-responsive **product catalog / showcase website** for **Gold & Glow**
+herbal cosmetics — _"precised care, poetic glow."_ Products are listed here, and each
+one links out to **Amazon, Flipkart and Meesho** so customers buy on their favourite
+marketplace. (No in-house cart/checkout — that's planned for later.)
+
+Built with **Next.js 16 (App Router, Turbopack)**, **React 19**, **TypeScript**,
+**Tailwind CSS v4**, and **shadcn/ui**-style components.
 
 ## ✨ Features
 
 - **13 real products** across 6 categories (Face Wash, Body Lotion, Skin Cream,
   Talc & Powder, Toner & Mist, Aloe Gel) using the brand's actual product photography.
+- **Marketplace links** — every product shows "Buy on Amazon / Flipkart / Meesho"
+  buttons (product page) and quick colour-coded chips (product cards).
 - **Homepage** — hero, category grid, bestsellers, talc feature banner, ingredient
   promise, customer reviews, newsletter.
 - **Shop page** — live search, category filters, and sorting (featured / price / rating).
-- **Product detail** — image gallery with thumbnails, quantity selector, benefits,
-  accordions (description, ingredients, how-to-use), related products.
-- **Cart** — slide-out drawer **and** full cart page, quantity controls, free-shipping
-  progress bar, savings, persisted to `localStorage`.
-- **Checkout** — shipping form, `GLOW20` coupon (20% off), order summary, and an order
-  confirmation screen. _(Demo only — no real payment is processed.)_
+- **Product detail** — image gallery with thumbnails, benefits, "Where to buy"
+  marketplace buttons, accordions (description, ingredients, how-to-use), related products.
 - **About** and **Contact** pages (with FAQ + working demo form).
-- Brand theming (magenta + champagne gold), light/dark tokens, custom fonts
-  (Playfair Display + Poppins), toasts, animations, SEO metadata.
+- Premium **Champagne Gold & Charcoal** theming, light/dark tokens, custom fonts
+  (Playfair Display + Poppins), animations, SEO metadata.
+
+## 🔗 Adding your marketplace links
+
+Links live in [`lib/products.ts`](lib/products.ts). Until you add exact listing URLs,
+every button automatically falls back to that marketplace's **search page** for the
+product (brand + name), so nothing is ever a dead link.
+
+To pin an exact listing, add a `links` field to any product:
+
+```ts
+{
+  id: "gg-01",
+  slug: "vitamin-c-face-wash",
+  // …
+  links: {
+    amazon: "https://www.amazon.in/dp/XXXXXXXXXX",
+    flipkart: "https://www.flipkart.com/…/p/XXXX",
+    meesho: "https://www.meesho.com/…/p/XXXX",
+  },
+},
+```
+
+Any marketplace you leave out keeps using the search fallback.
 
 ## 🚀 Running the project
 
@@ -56,22 +81,54 @@ Then open <http://localhost:3000>.
 
 ```
 app/
-  layout.tsx            # Root layout: fonts, cart provider, header/footer, toaster
+  layout.tsx            # Root layout: fonts, header/footer, toaster
   page.tsx              # Homepage
-  shop/page.tsx         # Shop (reads ?category=)
-  product/[slug]/       # Product detail (static-generated per product)
-  cart/ checkout/       # Cart & checkout
+  shop/page.tsx         # Shop / catalog (reads ?category=)
+  product/[slug]/       # Product detail (rendered live from the catalogue)
+  admin/                # Admin panel (env-based login + server actions)
+  api/admin/upload/     # Admin-only image upload → Supabase Storage
   about/ contact/       # Content pages
   globals.css           # Brand design tokens + Tailwind
 components/
-  ui/                   # shadcn-style primitives (button, card, sheet, accordion…)
-  site-header, site-footer, product-card, cart-drawer, product-detail, shop-client…
+  ui/                   # shadcn-style primitives (button, card, accordion…)
+  marketplace-buttons.tsx  # "Buy on Amazon/Flipkart/Meesho" buttons + chips
+  site-header, site-footer, product-card, product-detail, shop-client…
 lib/
-  products.ts           # Product catalog + brand info
-  cart-context.tsx      # Cart state (React Context + localStorage)
+  products.ts           # Product catalog + brand info + marketplace link helpers
   utils.ts              # cn() + INR formatter
 public/products/        # Product imagery
 ```
+
+## 🔐 Admin panel (Supabase, no Supabase Auth)
+
+An admin panel at **`/admin`** lets you add, edit and delete products (name, title,
+description, price, category, images, marketplace links, flags) with image uploads —
+backed by **your own Supabase project** (Postgres + Storage). The storefront reads live
+from the database, and **falls back to the built-in catalogue** whenever Supabase isn't
+reachable or the table is still empty, so the site never breaks.
+
+**How login works:** there is no Supabase Auth. The admin ID and password live in
+`.env.local`; the site's own server checks the login form against them and sets a signed,
+httpOnly cookie (7 days). Every admin action and image upload re-checks that cookie. Five
+wrong attempts from one IP lock login for 15 minutes.
+
+**One-time activation:**
+
+1. **Create a new Supabase project** for Gold & Glow (supabase.com → New project).
+2. **Create the table + image bucket** — Supabase → **SQL Editor** → paste and run
+   [`supabase/setup.sql`](supabase/setup.sql).
+3. **Fill `.env.local`** (copy from [`.env.example`](.env.example)):
+   - `SUPABASE_URL` — Project Settings → API → *Project URL*
+   - `SUPABASE_SERVICE_ROLE_KEY` — same page → *service_role* key. **Secret, server-only:**
+     never prefix it with `NEXT_PUBLIC_`, never commit it.
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — the login you'll use on `/admin`
+   - `ADMIN_SESSION_SECRET` — optional long random string for signing the cookie
+4. Restart `npm run dev`, open **`/admin`**, sign in, and click **"Import starter
+   catalogue"** to load the 13 built-in products — then edit them or add your own.
+
+Row-level security is ON with no public policies, so the table can only be reached through
+the site's server (service-role key). On Hostinger, set the same variables as environment
+variables for the Node.js app instead of a file.
 
 ## 🛠 Tech
 
@@ -86,6 +143,8 @@ Tailwind v4 is configured the documented compatibility way: `app/globals.css` us
 ## 📝 Notes
 
 - Product prices, descriptions and reviews are illustrative placeholder content —
-  update `lib/products.ts` with your real catalog data.
-- The checkout is a front-end demo; wire it to a real payment provider (Razorpay,
-  Stripe, etc.) and an order backend before going live.
+  update `lib/products.ts` with your real catalog data and marketplace links.
+- Prices are shown as **indicative MRP**; the actual price is whatever the marketplace
+  lists, since all purchases happen on Amazon / Flipkart / Meesho.
+- In-house cart & checkout are intentionally **not** included yet — this is a catalog
+  that drives traffic to the marketplaces. A full store can be added later.
