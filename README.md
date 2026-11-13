@@ -87,6 +87,7 @@ app/
   product/[slug]/       # Product detail (rendered live from the catalogue)
   admin/                # Admin panel (env-based login + server actions)
   api/admin/upload/     # Admin-only image upload → Supabase Storage
+db/                     # Drizzle schema + client (gg_products)
   about/ contact/       # Content pages
   globals.css           # Brand design tokens + Tailwind
 components/
@@ -99,13 +100,14 @@ lib/
 public/products/        # Product imagery
 ```
 
-## 🔐 Admin panel (Supabase, no Supabase Auth)
+## 🔐 Admin panel (Drizzle + Supabase, no Supabase Auth)
 
 An admin panel at **`/admin`** lets you add, edit and delete products (name, title,
-description, price, category, images, marketplace links, flags) with image uploads —
-backed by **your own Supabase project** (Postgres + Storage). The storefront reads live
-from the database, and **falls back to the built-in catalogue** whenever Supabase isn't
-reachable or the table is still empty, so the site never breaks.
+description, price, category, images, marketplace links, flags) with image uploads.
+Product data lives in **your own Supabase Postgres**, accessed through **Drizzle ORM**
+(schema in [`db/schema.ts`](db/schema.ts)); product images go to Supabase Storage. The
+storefront reads live from the database and **falls back to the built-in catalogue**
+whenever the database isn't reachable or the table is still empty, so the site never breaks.
 
 **How login works:** there is no Supabase Auth. The admin ID and password live in
 `.env.local`; the site's own server checks the login form against them and sets a signed,
@@ -114,25 +116,29 @@ wrong attempts from one IP lock login for 15 minutes.
 
 **One-time activation:**
 
-1. **Create a new Supabase project** for Gold & Glow (supabase.com → New project).
-2. **Create the table + image bucket** — Supabase → **SQL Editor** → paste and run
-   [`supabase/setup.sql`](supabase/setup.sql).
-3. **Fill `.env.local`** (copy from [`.env.example`](.env.example)):
-   - `SUPABASE_URL` — Project Settings → API → *Project URL*
-   - `SUPABASE_SERVICE_ROLE_KEY` — same page → *service_role* key. **Secret, server-only:**
-     never prefix it with `NEXT_PUBLIC_`, never commit it.
-   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — the login you'll use on `/admin`
-   - `ADMIN_SESSION_SECRET` — optional long random string for signing the cookie
+1. **Create a Supabase project** for Gold & Glow (supabase.com → New project) and remember
+   the database password.
+2. **Fill `.env.local`** (copy from [`.env.example`](.env.example)):
+   - `DATABASE_URL` — Dashboard → **Connect** → *Session pooler* URI, with
+     `[YOUR-PASSWORD]` replaced by your database password.
+   - `SUPABASE_URL` — Project URL, and `SUPABASE_SERVICE_ROLE_KEY` — Settings → API Keys →
+     **secret key** (`sb_secret_...`; legacy *service_role* also works). Used only for image
+     uploads. **Never the publishable key; secret, server-only.**
+   - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — the login for `/admin`;
+     `ADMIN_SESSION_SECRET` — long random string for signing the cookie.
+3. **Create the table:** `npm run db:migrate` (Drizzle applies `drizzle/0000_init.sql`: creates `gg_products` with row-level
+   security on and no public policies).
 4. Restart `npm run dev`, open **`/admin`**, sign in, and click **"Import starter
-   catalogue"** to load the 13 built-in products — then edit them or add your own.
+   catalogue"** to load the 13 built-in products. The image bucket is created automatically
+   on the first upload.
 
-Row-level security is ON with no public policies, so the table can only be reached through
-the site's server (service-role key). On Hostinger, set the same variables as environment
-variables for the Node.js app instead of a file.
+Other commands: `npm run db:generate` (after editing `db/schema.ts`, then `db:migrate` again; SQL lives in `drizzle/`),
+`npm run db:studio`. On Hostinger, set the same variables as environment variables for the
+Node.js app instead of a file.
 
 ## 🛠 Tech
 
-Next.js 16 (Turbopack) · React 19 · TypeScript 5.9 · Tailwind CSS v4 · Radix UI ·
+Next.js 16 (Turbopack) · React 19 · TypeScript 5.9 · Tailwind CSS v4 · Drizzle ORM · Radix UI ·
 lucide-react · sonner · class-variance-authority.
 
 Tailwind v4 is configured the documented compatibility way: `app/globals.css` uses

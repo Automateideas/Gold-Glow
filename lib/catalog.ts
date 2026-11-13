@@ -1,41 +1,50 @@
 import "server-only";
-import { createAdminSupabase } from "@/lib/supabase/admin";
-import { supabaseConfigured } from "@/lib/supabase/env";
+import { asc } from "drizzle-orm";
+import { dbConfigured, getDb } from "@/db";
+import { ggProducts } from "@/db/schema";
 import { products as seedProducts, type Category, type Product } from "@/lib/products";
-import { TABLE, rowToProduct, type ProductRow } from "@/lib/catalog-map";
+import { rowToProduct, type ProductRow } from "@/lib/catalog-map";
+
+/** Pull the Postgres error code/message out of a Drizzle/postgres.js error. */
+export function pgError(e: unknown): { code?: string; message: string } {
+  const err = e as { code?: string; message?: string; cause?: { code?: string; message?: string } };
+  return {
+    code: err?.cause?.code ?? err?.code,
+    message: err?.cause?.message ?? err?.message ?? "Database error.",
+  };
+}
+
+export function friendlyDbError(e: unknown): string {
+  const { code, message } = pgError(e);
+  if (code === "23505") return "Another product already uses that URL slug. Change the slug.";
+  if (code === "42P01")
+    return "The gg_products table doesn't exist yet — run `npm run db:migrate` once to create it.";
+  if (code === "28P01" || /password authentication failed/i.test(message))
+    return "Database login failed — check the password inside DATABASE_URL.";
+  if (/ENOTFOUND|ECONNREFUSED|ETIMEDOUT|CONNECT_TIMEOUT/i.test(message + (code ?? "")))
+    return "Can't reach the database — check DATABASE_URL (use the Supabase pooler connection string).";
+  return message;
+}
 
 async function fetchRows(): Promise<{ rows: ProductRow[]; error?: string }> {
-  if (!supabaseConfigured()) {
-    return { rows: [], error: "Supabase isn't configured yet (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)." };
+  if (!dbConfigured()) {
+    return { rows: [], error: "Database isn't configured yet (set DATABASE_URL in .env.local)." };
   }
   try {
-    const sb = createAdminSupabase();
-    const { data, error } = await sb
-      .from(TABLE)
-      .select("*")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true });
-    if (error) {
-      const missing =
-        error.code === "PGRST205" ||
-        error.code === "42P01" ||
-        /does not exist|schema cache/i.test(error.message);
-      return {
-        rows: [],
-        error: missing
-          ? "The gg_products table doesn't exist yet — run supabase/setup.sql in the Supabase SQL Editor."
-          : error.message,
-      };
-    }
-    return { rows: (data ?? []) as ProductRow[] };
+    const rows = await getDb()
+      .select()
+      .from(ggProducts)
+      .orderBy(asc(ggProducts.sort_order), asc(ggProducts.created_at));
+    return { rows };
   } catch (e) {
-    return { rows: [], error: e instanceof Error ? e.message : "Could not reach Supabase." };
+    console.error("[catalog] database error:", pgError(e));
+    return { rows: [], error: friendlyDbError(e) };
   }
 }
 
 /**
- * All products for the storefront. Reads from Supabase when configured; if it
- * isn't reachable, the table isn't created yet, or it's still empty, it falls
+ * All products for the storefront. Reads from the database when configured; if
+ * it isn't reachable, the table isn't created yet, or it's still empty, it falls
  * back to the built-in seed so the site always renders.
  */
 export async function getAllProducts(): Promise<Product[]> {

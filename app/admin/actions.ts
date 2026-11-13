@@ -11,9 +11,11 @@ import {
   recordFailure,
   startAdminSession,
 } from "@/lib/admin/auth";
-import { createAdminSupabase } from "@/lib/supabase/admin";
-import { supabaseConfigured } from "@/lib/supabase/env";
-import { TABLE, productToRow, type ProductRow } from "@/lib/catalog-map";
+import { eq, sql } from "drizzle-orm";
+import { dbConfigured, getDb } from "@/db";
+import { ggProducts, type GgProductInsert } from "@/db/schema";
+import { friendlyDbError } from "@/lib/catalog";
+import { productToRow } from "@/lib/catalog-map";
 import { CATEGORIES, products as seedProducts } from "@/lib/products";
 
 export type LoginState = { error?: string };
@@ -66,7 +68,7 @@ const list = (v: unknown, max = 30) =>
     .slice(0, max);
 const isHttpUrl = (s: string) => /^https?:\/\/\S+$/i.test(s);
 
-function cleanRow(input: unknown, id: string): ProductRow | string {
+function cleanRow(input: unknown, id: string): GgProductInsert | string {
   const r = (input ?? {}) as Record<string, unknown>;
   const name = str(r.name, 200);
   if (!name) return "Product name is required.";
@@ -130,15 +132,8 @@ function cleanRow(input: unknown, id: string): ProductRow | string {
 
 async function guard(): Promise<string | null> {
   if (!(await isAdminSession())) return "Your session expired. Please sign in again.";
-  if (!supabaseConfigured()) return "Supabase isn't configured yet.";
+  if (!dbConfigured()) return "Database isn't configured yet (set DATABASE_URL).";
   return null;
-}
-
-function friendly(error: { code?: string; message: string }) {
-  if (error.code === "23505") return "Another product already uses that URL slug. Change the slug.";
-  if (error.code === "PGRST205" || error.code === "42P01")
-    return "The gg_products table doesn't exist — run supabase/setup.sql in Supabase first.";
-  return error.message;
 }
 
 export async function saveProductAction(payload: {
@@ -153,29 +148,56 @@ export async function saveProductAction(payload: {
   const row = cleanRow(payload.row, id);
   if (typeof row === "string") return { ok: false, error: row };
 
-  const sb = createAdminSupabase();
-  const { error } = editing
-    ? await sb.from(TABLE).update(row).eq("id", id)
-    : await sb.from(TABLE).insert(row);
-  if (error) return { ok: false, error: friendly(error) };
-  return { ok: true };
+  try {
+    const db = getDb();
+    if (editing) {
+      const { id: _id, ...changes } = row;
+      const done = await db
+        .update(ggProducts)
+        .set(changes)
+        .where(eq(ggProducts.id, id))
+        .returning({ id: ggProducts.id });
+      if (done.length === 0) return { ok: false, error: "That product no longer exists." };
+    } else {
+      await db.insert(ggProducts).values(row);
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
 }
 
 export async function deleteProductAction(id: string): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return { ok: false, error: denied };
-  const { error } = await createAdminSupabase().from(TABLE).delete().eq("id", String(id));
-  if (error) return { ok: false, error: friendly(error) };
-  return { ok: true };
+  try {
+    await getDb().delete(ggProducts).where(eq(ggProducts.id, String(id)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
 }
 
 export async function importStarterAction(): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return { ok: false, error: denied };
-  const rows = seedProducts.map((p, i) => productToRow(p, i));
-  const { error } = await createAdminSupabase()
-    .from(TABLE)
-    .upsert(rows, { onConflict: "id" });
-  if (error) return { ok: false, error: friendly(error) };
-  return { ok: true };
+  // productToRow always fills every column (only compare_at may be null).
+  const rows = seedProducts.map((p, i) => productToRow(p, i) as GgProductInsert);
+  try {
+    await getDb()
+      .insert(ggProducts)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: ggProducts.id,
+        set: Object.fromEntries(
+          Object.keys(rows[0])
+            .filter((k) => k !== "id")
+            .map((k) => [k, sql.raw(`excluded."${k}"`)])
+            .concat([["updated_at", sql`now()`]])
+        ),
+      });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
 }
