@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { isAdminSession } from "@/lib/admin/auth";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { PRODUCT_IMAGE_BUCKET, supabaseConfigured } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB per image
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB in; it's shrunk to WebP before saving
 const ALLOWED: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -36,23 +37,39 @@ export async function POST(req: Request) {
     );
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "Image is larger than 5 MB." }, { status: 400 });
+    return NextResponse.json({ error: "Image is larger than 10 MB." }, { status: 400 });
   }
 
   const sb = createAdminSupabase();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const body = Buffer.from(await file.arrayBuffer());
+  let body: Buffer = Buffer.from(await file.arrayBuffer());
+  let contentType = file.type;
+  let outExt = ext;
+  // Shrink big photos (max 1600px, WebP) so the storefront stays fast. GIFs are kept as-is.
+  if (file.type !== "image/gif") {
+    try {
+      body = await sharp(body)
+        .rotate()
+        .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toBuffer();
+      contentType = "image/webp";
+      outExt = "webp";
+    } catch {
+      return NextResponse.json({ error: "That file isn't a readable image." }, { status: 400 });
+    }
+  }
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${outExt}`;
 
   let { error } = await sb.storage
     .from(PRODUCT_IMAGE_BUCKET)
-    .upload(path, body, { contentType: file.type, cacheControl: "31536000", upsert: false });
+    .upload(path, body, { contentType, cacheControl: "31536000", upsert: false });
 
   // Bucket missing? Create it (public) once, then retry.
   if (error && /bucket.*not found/i.test(error.message)) {
     await sb.storage.createBucket(PRODUCT_IMAGE_BUCKET, { public: true });
     ({ error } = await sb.storage
       .from(PRODUCT_IMAGE_BUCKET)
-      .upload(path, body, { contentType: file.type, cacheControl: "31536000", upsert: false }));
+      .upload(path, body, { contentType, cacheControl: "31536000", upsert: false }));
   }
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -30,3 +30,7 @@ yarn-error.log*
 
 # staging / scratch
 /_staging_images
+
+# second dev server used for testing
+/.next-test/
+/.next-build/

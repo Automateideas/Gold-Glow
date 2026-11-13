@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/products";
 import { getAllProducts } from "@/lib/catalog";
+import { getPublishedReviews, getSettings } from "@/lib/site-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/product-card";
@@ -21,29 +22,12 @@ import { HeroCarousel } from "@/components/hero-carousel";
 
 export const dynamic = "force-dynamic";
 
-const reviews = [
-  {
-    name: "Ananya R.",
-    city: "Mumbai",
-    text: "The Vitamin-C face wash gave my dull skin a proper glow in two weeks. It doesn't dry me out at all.",
-    product: "Vitamin-C Face Wash",
-  },
-  {
-    name: "Priya S.",
-    city: "Bengaluru",
-    text: "Honey & almond lotion is the softest thing ever — non-sticky and smells divine. My whole family uses it now.",
-    product: "Honey & Almond Lotion",
-  },
-  {
-    name: "Meera K.",
-    city: "Delhi",
-    text: "Rose water toner is a staple in my bag. Instantly refreshing and 100% pure. Repurchased 3 times!",
-    product: "Premium Rose Water",
-  },
-];
-
 export default async function HomePage() {
-  const all = await getAllProducts();
+  const [all, settings, reviews] = await Promise.all([
+    getAllProducts(),
+    getSettings(),
+    getPublishedReviews(),
+  ]);
   const bestsellers = all.filter((p) => p.bestSeller).slice(0, 4);
   const newIn = all.filter((p) => p.new || p.rating >= 4.7).slice(0, 8);
   // Hero carousel: products flagged "Home carousel" in the admin (falls back to bestsellers).
@@ -59,16 +43,15 @@ export default async function HomePage() {
         <div className="container grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-20">
           <div className="animate-fade-up">
             <Badge variant="soft" className="mb-5 gap-1.5 px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5" /> New season glow drop
+              <Sparkles className="h-3.5 w-3.5" /> {settings.heroBadge}
             </Badge>
             <h1 className="font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Precised care, <span className="gold-text">poetic</span>{" "}
-              <span className="text-primary">glow.</span>
+              {settings.heroLine1}{" "}
+              <span className="gold-text">{settings.heroGold}</span>{" "}
+              <span className="text-primary">{settings.heroAccent}</span>
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-              Herbal-inspired skincare and body care that treats your skin
-              gently and lights it up beautifully. Clean formulas, radiant
-              results.
+              {settings.heroDescription}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button size="lg" asChild>
@@ -106,13 +89,17 @@ export default async function HomePage() {
                   </div>
                 ))}
               </div>
-              <div>
-                <StarRating rating={5} />
-                <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">4.8/5</span>{" "}
-                  from 2,300+ happy customers
-                </p>
-              </div>
+              {settings.showRating && (
+                <div>
+                  <StarRating rating={5} />
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-semibold text-foreground">
+                      {settings.ratingScore}
+                    </span>{" "}
+                    {settings.ratingText}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -185,55 +172,63 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FEATURE BANNER — TALC */}
-      <section className="container py-16">
-        <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-secondary via-background to-accent">
-          <div className="grid items-center gap-6 lg:grid-cols-2">
-            <div className="p-8 sm:p-12">
-              <Badge variant="gold" className="mb-4">
-                Icy-touch collection
-              </Badge>
-              <h3 className="font-serif text-3xl font-bold sm:text-4xl">
-                Stay fresh, all day long
-              </h3>
-              <p className="mt-3 max-w-md text-muted-foreground">
-                Our Blossom talc range cools on contact and keeps you feeling
-                confident — with rose, fresh floral and long-lasting deo
-                freshness.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-4">
-                {[
-                  { icon: Wind, label: "Icy cooling" },
-                  { icon: Sun, label: "All-day dry" },
-                  { icon: Sparkles, label: "Floral scent" },
-                ].map((f) => (
-                  <div
-                    key={f.label}
-                    className="flex items-center gap-2 text-sm font-medium"
-                  >
-                    <f.icon className="h-4 w-4 text-primary" />
-                    {f.label}
+      {/* FEATURE BANNER (editable in Admin → Settings) */}
+      {settings.bannerEnabled && (
+        <section className="container py-16">
+          <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-secondary via-background to-accent">
+            <div className="grid items-center gap-6 lg:grid-cols-2">
+              <div className="p-8 sm:p-12">
+                {settings.bannerBadge && (
+                  <Badge variant="gold" className="mb-4">
+                    {settings.bannerBadge}
+                  </Badge>
+                )}
+                <h3 className="font-serif text-3xl font-bold sm:text-4xl">
+                  {settings.bannerTitle}
+                </h3>
+                <p className="mt-3 max-w-md text-muted-foreground">
+                  {settings.bannerText}
+                </p>
+                {settings.bannerFeatures.length > 0 && (
+                  <div className="mt-6 flex flex-wrap gap-4">
+                    {settings.bannerFeatures.slice(0, 3).map((label, i) => {
+                      const Icon = [Wind, Sun, Sparkles][i % 3];
+                      return (
+                        <div
+                          key={label}
+                          className="flex items-center gap-2 text-sm font-medium"
+                        >
+                          <Icon className="h-4 w-4 text-primary" />
+                          {label}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                )}
+                {settings.bannerButtonLabel && settings.bannerButtonLink && (
+                  <Button className="mt-8" asChild>
+                    <Link href={settings.bannerButtonLink}>
+                      {settings.bannerButtonLabel} <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
               </div>
-              <Button className="mt-8" asChild>
-                <Link href="/shop?category=Talc+%26+Powder">
-                  Shop talc range <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-            <div className="relative h-64 lg:h-full lg:min-h-[380px]">
-              <Image
-                src="/products/talc-trio-banner.jpg"
-                alt="Gold & Glow Blossom talc range"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
+              {settings.bannerImage && (
+                <div className="relative h-64 lg:h-full lg:min-h-[380px]">
+                  <Image
+                    src={settings.bannerImage}
+                    alt={settings.bannerTitle}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    unoptimized={/^https?:/i.test(settings.bannerImage)}
+                    className="object-cover"
+                  />
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* NEW / CURATED GRID */}
       <section className="container py-8">
@@ -289,6 +284,7 @@ export default async function HomePage() {
       </section>
 
       {/* REVIEWS */}
+      {reviews.length > 0 && (
       <section className="container py-8" id="reviews">
         <SectionHeading
           center
@@ -298,24 +294,27 @@ export default async function HomePage() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {reviews.map((r) => (
             <div
-              key={r.name}
+              key={r.id}
               className="flex flex-col rounded-2xl border bg-card p-6 shadow-sm"
             >
               <Quote className="h-7 w-7 text-primary/30" />
-              <StarRating rating={5} className="mt-3" />
+              <StarRating rating={r.rating} className="mt-3" />
               <p className="mt-3 flex-1 text-sm text-foreground/90">
                 &ldquo;{r.text}&rdquo;
               </p>
               <div className="mt-5 border-t pt-4">
                 <p className="text-sm font-semibold">{r.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {r.city} · verified buyer of {r.product}
+                  {[r.city, r.product && `verified buyer of ${r.product}`]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               </div>
             </div>
           ))}
         </div>
       </section>
+      )}
     </>
   );
 }

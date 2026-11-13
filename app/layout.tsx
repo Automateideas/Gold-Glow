@@ -3,6 +3,7 @@ import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/site-chrome";
 import { Toaster } from "sonner";
+import { getSettings } from "@/lib/site-data";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -18,37 +19,39 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://goldandglow.in"),
-  title: {
-    default: "Gold & Glow — Precised Care, Poetic Glow",
-    template: "%s · Gold & Glow",
-  },
-  description:
-    "Gold & Glow herbal cosmetics — vitamin-C face wash, aloe & honey lotions, icy-touch talc, rose water and more. Precised care, poetic glow.",
-  keywords: [
-    "Gold & Glow",
-    "cosmetics",
-    "skincare",
-    "face wash",
-    "body lotion",
-    "talc",
-    "rose water",
-    "herbal cosmetics",
-  ],
-  openGraph: {
-    title: "Gold & Glow — Precised Care, Poetic Glow",
-    description:
-      "Herbal-inspired cosmetics crafted for precise care and a poetic, golden glow.",
-    type: "website",
-  },
-};
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://goldandglow.in";
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSettings();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: s.seoTitle, template: "%s · Gold & Glow" },
+    description: s.seoDescription,
+    keywords: [
+      "Gold & Glow",
+      "cosmetics",
+      "skincare",
+      "face wash",
+      "body lotion",
+      "talc",
+      "rose water",
+      "herbal cosmetics",
+    ],
+    openGraph: {
+      title: s.seoTitle,
+      description: s.seoDescription,
+      type: "website",
+      siteName: "Gold & Glow",
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await getSettings();
   return (
     <html
       lang="en"
@@ -56,7 +59,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen font-sans" suppressHydrationWarning>
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome settings={settings}>{children}</SiteChrome>
         <Toaster
           position="bottom-right"
           richColors

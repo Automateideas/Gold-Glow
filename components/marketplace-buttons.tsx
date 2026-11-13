@@ -1,6 +1,23 @@
+"use client";
+
 import { ExternalLink } from "lucide-react";
 import { MARKETPLACES, buyUrl, type Product } from "@/lib/products";
 import { cn } from "@/lib/utils";
+import type { Marketplace } from "@/lib/products";
+
+/** Counts the click for Admin → Analytics. Never blocks or delays the link. */
+function track(product: Product, marketplace: Marketplace) {
+  try {
+    const body = JSON.stringify({ productId: product.id, name: product.name, marketplace });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/api/track", new Blob([body], { type: "application/json" }));
+    } else {
+      void fetch("/api/track", { method: "POST", body, keepalive: true });
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 /** Full-width "Buy on <marketplace>" buttons — used on the product page. */
 export function MarketplaceButtons({
@@ -18,6 +35,7 @@ export function MarketplaceButtons({
           href={buyUrl(product, m.id)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => track(product, m.id)}
           className="group flex items-center justify-between rounded-xl border bg-card px-4 py-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md"
         >
           <span className="flex items-center gap-3">
@@ -56,6 +74,7 @@ export function MarketplaceChips({
           href={buyUrl(product, m.id)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => track(product, m.id)}
           title={`Buy on ${m.name}`}
           aria-label={`Buy ${product.name} on ${m.name}`}
           className="grid h-8 w-8 place-items-center rounded-md border bg-white p-1 shadow-sm transition-transform hover:scale-110"

@@ -6,6 +6,7 @@ import { getProductBySlug, getRelatedProducts } from "@/lib/catalog";
 import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
+import { BRAND } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +40,25 @@ export default async function ProductPage({
 
   const related = await getRelatedProducts(product.slug, product.category);
 
+  // Structured data so Google can show the product. (No price/rating on purpose:
+  // we don't sell directly and the numbers aren't verified reviews.)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.short || product.description,
+    image: product.images,
+    sku: product.id,
+    category: product.category,
+    brand: { "@type": "Brand", name: BRAND.name },
+  };
+
   return (
     <div className="container py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link href="/" className="hover:text-primary">Home</Link>

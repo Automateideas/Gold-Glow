@@ -7,6 +7,8 @@ import { Menu, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { BoldText } from "@/components/bold-text";
+import type { SiteSettings } from "@/lib/settings";
 import {
   Sheet,
   SheetContent,
@@ -24,7 +26,7 @@ const NAV = [
   { label: "Contact", href: "/contact" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ settings }: { settings: SiteSettings }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -38,16 +40,16 @@ export function SiteHeader() {
 
   return (
     <>
-      {/* Announcement bar */}
-      <div className="brand-gradient text-primary-foreground">
-        <div className="container flex h-9 items-center justify-center gap-2 overflow-hidden text-center text-xs font-medium">
-          <span className="truncate">
-            ✨ Now available on{" "}
-            <span className="font-bold">Amazon · Flipkart · Meesho</span> — shop from
-            your favourite app
-          </span>
+      {/* Announcement bar (editable in Admin → Settings) */}
+      {settings.announcementEnabled && settings.announcement && (
+        <div className="brand-gradient text-primary-foreground">
+          <div className="container flex h-9 items-center justify-center gap-2 overflow-hidden text-center text-xs font-medium">
+            <span className="truncate">
+              <BoldText text={settings.announcement} />
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       <header
         className={cn(

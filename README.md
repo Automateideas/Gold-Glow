@@ -114,6 +114,17 @@ whenever the database isn't reachable or the table is still empty, so the site n
 httpOnly cookie (7 days). Every admin action and image upload re-checks that cookie. Five
 wrong attempts from one IP lock login for 15 minutes.
 
+**Admin tabs** (`/admin`):
+
+| Tab | What you can do |
+| --- | --- |
+| **Products** | Add, edit, delete, duplicate, search/filter; hide a product without deleting it; "Home carousel", Bestseller and New switches; image upload (auto-resized to WebP) |
+| **Reviews** | The customer stories on the homepage (until you add your own, 3 built-in samples show) |
+| **Messages** | Everything sent through the Contact form, with unread count and one-click reply |
+| **Subscribers** | Footer newsletter signups, with CSV download |
+| **Analytics** | Clicks on the Buy-on-Amazon/Flipkart/Meesho buttons per product and marketplace (7/30/90 days) |
+| **Settings** | Announcement bar, homepage heading and text, feature banner (with image), contact details, social links, Google title/description |
+
 **One-time activation:**
 
 1. **Create a Supabase project** for Gold & Glow (supabase.com → New project) and remember
@@ -124,9 +135,10 @@ wrong attempts from one IP lock login for 15 minutes.
    - `SUPABASE_URL` — Project URL, and `SUPABASE_SERVICE_ROLE_KEY` — Settings → API Keys →
      **secret key** (`sb_secret_...`; legacy *service_role* also works). Used only for image
      uploads. **Never the publishable key; secret, server-only.**
+   - `NEXT_PUBLIC_SITE_URL` — your public website address (sitemap, Google & social previews).
    - `ADMIN_USERNAME` / `ADMIN_PASSWORD` — the login for `/admin`;
      `ADMIN_SESSION_SECRET` — long random string for signing the cookie.
-3. **Create the table:** `npm run db:migrate` (Drizzle applies `drizzle/0000_init.sql`: creates `gg_products` with row-level
+3. **Create the tables:** `npm run db:migrate` (Drizzle applies `drizzle/0000_init.sql`: creates `gg_products` with row-level
    security on and no public policies).
 4. Restart `npm run dev`, open **`/admin`**, sign in, and click **"Import starter
    catalogue"** to load the 13 built-in products. The image bucket is created automatically

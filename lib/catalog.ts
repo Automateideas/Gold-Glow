@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { asc } from "drizzle-orm";
 import { dbConfigured, getDb } from "@/db";
 import { ggProducts } from "@/db/schema";
@@ -14,6 +15,24 @@ export function pgError(e: unknown): { code?: string; message: string } {
   };
 }
 
+/** Runs a DB call, retrying once on a transient network/timeout error (e.g. a cold pooler). */
+export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    const { code, message } = pgError(e);
+    const transient =
+      code === "57014" || // statement timeout / cancelled
+      code === "ETIMEDOUT" ||
+      code === "ECONNRESET" ||
+      code === "CONNECTION_CLOSED" ||
+      /timeout|ECONNRESET/i.test(message);
+    if (!transient) throw e;
+    await new Promise((r) => setTimeout(r, 400));
+    return await fn();
+  }
+}
+
 export function friendlyDbError(e: unknown): string {
   const { code, message } = pgError(e);
   if (code === "23505") return "Another product already uses that URL slug. Change the slug.";
@@ -26,21 +45,24 @@ export function friendlyDbError(e: unknown): string {
   return message;
 }
 
-async function fetchRows(): Promise<{ rows: ProductRow[]; error?: string }> {
+/** Cached per request, so one page render hits the database only once. */
+const fetchRows = cache(async (): Promise<{ rows: ProductRow[]; error?: string }> => {
   if (!dbConfigured()) {
     return { rows: [], error: "Database isn't configured yet (set DATABASE_URL in .env.local)." };
   }
   try {
-    const rows = await getDb()
-      .select()
-      .from(ggProducts)
-      .orderBy(asc(ggProducts.sort_order), asc(ggProducts.created_at));
+    const rows = await withRetry(() =>
+      getDb()
+        .select()
+        .from(ggProducts)
+        .orderBy(asc(ggProducts.sort_order), asc(ggProducts.created_at))
+    );
     return { rows };
   } catch (e) {
     console.error("[catalog] database error:", pgError(e));
     return { rows: [], error: friendlyDbError(e) };
   }
-}
+});
 
 /**
  * All products for the storefront. Reads from the database when configured; if
@@ -50,7 +72,7 @@ async function fetchRows(): Promise<{ rows: ProductRow[]; error?: string }> {
 export async function getAllProducts(): Promise<Product[]> {
   const { rows, error } = await fetchRows();
   if (error || rows.length === 0) return seedProducts;
-  return rows.map(rowToProduct);
+  return rows.map(rowToProduct).filter((p) => p.published !== false);
 }
 
 /** Products for the admin dashboard (no seed fallback, surfaces errors). */

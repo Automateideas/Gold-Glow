@@ -22,6 +22,8 @@ export type Product = {
   bestSeller?: boolean;
   /** Show in the homepage hero carousel. */
   hero?: boolean;
+  /** false = hidden from the storefront (draft). Defaults to true. */
+  published?: boolean;
   new?: boolean;
   images: string[];
   shade: string; // accent color used in UI cards (hsl)

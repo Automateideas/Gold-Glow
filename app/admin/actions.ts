@@ -13,7 +13,15 @@ import {
 } from "@/lib/admin/auth";
 import { eq, sql } from "drizzle-orm";
 import { dbConfigured, getDb } from "@/db";
-import { ggProducts, type GgProductInsert } from "@/db/schema";
+import {
+  ggMessages,
+  ggProducts,
+  ggReviews,
+  ggSettings,
+  ggSubscribers,
+  type GgProductInsert,
+} from "@/db/schema";
+import { DEFAULT_REVIEWS, mergeSettings } from "@/lib/settings";
 import { friendlyDbError } from "@/lib/catalog";
 import { productToRow } from "@/lib/catalog-map";
 import { CATEGORIES, products as seedProducts } from "@/lib/products";
@@ -116,6 +124,7 @@ function cleanRow(input: unknown, id: string): GgProductInsert | string {
     best_seller: r.best_seller === true,
     is_new: r.is_new === true,
     in_hero: r.in_hero === true,
+    published: r.published !== false,
     images,
     shade: str(r.shade, 50) || "335 82% 46%",
     short: str(r.short, 600),
@@ -202,3 +211,193 @@ export async function importStarterAction(): Promise<ActionResult> {
     return { ok: false, error: friendlyDbError(e) };
   }
 }
+
+/* --------------------- more product actions --------------------- */
+
+export async function duplicateProductAction(id: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    const db = getDb();
+    const [src] = await db.select().from(ggProducts).where(eq(ggProducts.id, String(id))).limit(1);
+    if (!src) return { ok: false, error: "That product no longer exists." };
+    const stamp = Date.now().toString(36);
+    await db.insert(ggProducts).values({
+      ...src,
+      id: `gg-${stamp}`,
+      slug: `${src.slug}-copy-${stamp.slice(-4)}`,
+      name: `${src.name} (copy)`,
+      published: false, // copies start hidden until you've edited them
+      in_hero: false,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function setProductPublishedAction(id: string, published: boolean): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().update(ggProducts).set({ published: !!published }).where(eq(ggProducts.id, String(id)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+/* ----------------------------- settings ----------------------------- */
+
+const urlOrPath = (s: string) =>
+  s === "" || /^https?:\/\/\S+$/i.test(s) || /^\/\S*$/.test(s);
+const urlOnly = (s: string) => s === "" || /^https?:\/\/\S+$/i.test(s);
+
+export async function saveSettingsAction(input: unknown): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+
+  const merged = mergeSettings(input);
+  const s: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(merged)) {
+    s[k] = typeof v === "string" ? v.trim().slice(0, 1500) : Array.isArray(v) ? v.map((x) => x.trim().slice(0, 100)).filter(Boolean).slice(0, 6) : v;
+  }
+  for (const k of ["instagram", "facebook", "youtube"]) {
+    if (!urlOnly(s[k] as string)) return { ok: false, error: `The ${k} link must start with https://` };
+  }
+  if (!urlOrPath(s.bannerButtonLink as string)) {
+    return { ok: false, error: "Banner button link must start with / or https://" };
+  }
+  if (!urlOrPath(s.bannerImage as string)) {
+    return { ok: false, error: "Banner image must be an uploaded image or an https:// link." };
+  }
+  if (!s.heroLine1 && !s.heroGold && !s.heroAccent) {
+    return { ok: false, error: "The hero heading can't be empty." };
+  }
+  try {
+    await getDb()
+      .insert(ggSettings)
+      .values({ key: "site", data: s })
+      .onConflictDoUpdate({ target: ggSettings.key, set: { data: s, updated_at: new Date() } });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function resetSettingsAction(): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().delete(ggSettings).where(eq(ggSettings.key, "site"));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+/* ----------------------------- reviews ----------------------------- */
+
+export async function saveReviewAction(payload: { id?: string; row: unknown }): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  const r = (payload.row ?? {}) as Record<string, unknown>;
+  const name = str(r.name, 100);
+  const text = str(r.text, 1000);
+  if (!name || !text) return { ok: false, error: "Name and the review text are required." };
+  const values = {
+    name,
+    city: str(r.city, 100),
+    text,
+    product: str(r.product, 200),
+    rating: Math.min(5, Math.max(1, int(r.rating, 5))),
+    published: r.published !== false,
+    sort_order: int(r.sort_order),
+  };
+  try {
+    const db = getDb();
+    if (payload.id) {
+      await db.update(ggReviews).set(values).where(eq(ggReviews.id, payload.id));
+    } else {
+      await db.insert(ggReviews).values({ id: `rv-${Date.now().toString(36)}`, ...values });
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function deleteReviewAction(id: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().delete(ggReviews).where(eq(ggReviews.id, String(id)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+/** Copy the built-in sample reviews into the database so they can be edited. */
+export async function importDefaultReviewsAction(): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb()
+      .insert(ggReviews)
+      .values(
+        DEFAULT_REVIEWS.map((r, i) => ({
+          id: `rv-${r.id}`,
+          name: r.name,
+          city: r.city,
+          text: r.text,
+          product: r.product,
+          rating: r.rating,
+          published: true,
+          sort_order: i,
+        }))
+      )
+      .onConflictDoNothing();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+/* ------------------- messages & subscribers ------------------- */
+
+export async function setMessageReadAction(id: number, read: boolean): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().update(ggMessages).set({ is_read: !!read }).where(eq(ggMessages.id, Number(id)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function deleteMessageAction(id: number): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().delete(ggMessages).where(eq(ggMessages.id, Number(id)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function deleteSubscriberAction(email: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    await getDb().delete(ggSubscribers).where(eq(ggSubscribers.email, String(email)));
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+

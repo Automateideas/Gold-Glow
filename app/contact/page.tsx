@@ -1,20 +1,17 @@
-"use client";
-
-import * as React from "react";
-import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { ContactForm } from "@/components/contact-form";
+import { getSettings } from "@/lib/site-data";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import { BRAND } from "@/lib/products";
+
+export const metadata: Metadata = { title: "Contact" };
+export const dynamic = "force-dynamic";
 
 const faqs = [
   {
@@ -35,20 +32,8 @@ const faqs = [
   },
 ];
 
-export default function ContactPage() {
-  const [sending, setSending] = React.useState(false);
-
-  function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSending(true);
-    setTimeout(() => {
-      setSending(false);
-      toast.success("Message sent!", {
-        description: "Our care team will get back to you within 24 hours.",
-      });
-      (e.target as HTMLFormElement).reset();
-    }, 1200);
-  }
+export default async function ContactPage() {
+  const s = await getSettings();
 
   return (
     <div className="container py-10 sm:py-14">
@@ -69,10 +54,10 @@ export default function ContactPage() {
         {/* Info */}
         <div className="space-y-4">
           {[
-            { icon: Mail, label: "Email", value: BRAND.supportEmail },
-            { icon: Phone, label: "Phone", value: BRAND.phone },
-            { icon: MapPin, label: "Address", value: BRAND.address },
-            { icon: Clock, label: "Hours", value: "Mon–Sat · 10am – 7pm IST" },
+            { icon: Mail, label: "Email", value: s.email },
+            { icon: Phone, label: "Phone", value: s.phone },
+            { icon: MapPin, label: "Address", value: s.address },
+            { icon: Clock, label: "Hours", value: s.hours },
           ].map((item) => (
             <Card key={item.label} className="flex items-start gap-4 p-5">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10">
@@ -87,32 +72,7 @@ export default function ContactPage() {
         </div>
 
         {/* Form */}
-        <Card className="p-6 sm:p-8">
-          <h2 className="text-lg font-semibold">Send us a message</h2>
-          <form onSubmit={submit} className="mt-5 grid gap-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="grid gap-1.5">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" required placeholder="Your name" />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="cemail">Email</Label>
-                <Input id="cemail" type="email" required placeholder="you@email.com" />
-              </div>
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="subject">Subject</Label>
-              <Input id="subject" required placeholder="How can we help?" />
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="message">Message</Label>
-              <Textarea id="message" required placeholder="Write your message…" />
-            </div>
-            <Button type="submit" size="lg" disabled={sending}>
-              {sending ? "Sending…" : (<>Send message <Send className="h-4 w-4" /></>)}
-            </Button>
-          </form>
-        </Card>
+        <ContactForm />
       </div>
 
       {/* FAQ */}

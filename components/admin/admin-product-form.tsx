@@ -8,6 +8,7 @@ import { saveProductAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Field, Toggle, uploadImage } from "@/components/admin/fields";
 import { Textarea } from "@/components/ui/textarea";
 
 function slugify(s: string) {
@@ -31,6 +32,7 @@ type FormState = {
   bestSeller: boolean;
   isNew: boolean;
   inHero: boolean;
+  published: boolean;
   shade: string;
   short: string;
   description: string;
@@ -58,6 +60,7 @@ function initialState(p: Product | null): FormState {
     bestSeller: p?.bestSeller ?? false,
     isNew: p?.new ?? false,
     inHero: p?.hero ?? false,
+    published: p?.published ?? true,
     shade: p?.shade ?? "335 82% 46%",
     short: p?.short ?? "",
     description: p?.description ?? "",
@@ -95,19 +98,8 @@ export function AdminProductForm({
     if (!files.length) return;
     setUploading(true);
     for (const file of files) {
-      try {
-        const body = new FormData();
-        body.append("file", file);
-        const res = await fetch("/api/admin/upload", { method: "POST", body });
-        const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
-        if (!res.ok || !json.url) {
-          toast.error(`${file.name}: ${json.error ?? "upload failed"}`);
-          continue;
-        }
-        setImages((prev) => [...prev, json.url!]);
-      } catch {
-        toast.error(`${file.name}: network error while uploading`);
-      }
+      const url = await uploadImage(file);
+      if (url) setImages((prev) => [...prev, url]);
     }
     setUploading(false);
     e.target.value = "";
@@ -134,6 +126,7 @@ export function AdminProductForm({
       best_seller: f.bestSeller,
       is_new: f.isNew,
       in_hero: f.inHero,
+      published: f.published,
       images,
       shade: f.shade.trim() || "335 82% 46%",
       short: f.short.trim(),
@@ -216,7 +209,7 @@ export function AdminProductForm({
             </label>
           </div>
           <p className="mt-1.5 text-xs text-muted-foreground">
-            First image is the main thumbnail. PNG/JPG recommended.
+            First image is the main thumbnail. Big photos are resized automatically.
           </p>
         </div>
 
@@ -271,6 +264,7 @@ export function AdminProductForm({
         <div className="mt-4 flex flex-wrap gap-5">
           <Toggle label="Bestseller" checked={f.bestSeller} onChange={(v) => set("bestSeller", v)} />
           <Toggle label="New" checked={f.isNew} onChange={(v) => set("isNew", v)} />
+          <Toggle label="Visible on site" checked={f.published} onChange={(v) => set("published", v)} />
           <Toggle label="Home carousel" checked={f.inHero} onChange={(v) => set("inHero", v)} />
           <Field label="Sort order" hint="lower = earlier">
             <Input type="number" value={f.sortOrder} onChange={(e) => set("sortOrder", e.target.value)} className="w-24" />
@@ -330,50 +324,5 @@ export function AdminProductForm({
         </div>
       </form>
     </div>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  required,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label>
-        {label}
-        {required && <span className="text-destructive"> *</span>}
-        {hint && <span className="ml-1 font-normal text-muted-foreground">({hint})</span>}
-      </Label>
-      {children}
-    </div>
-  );
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-[hsl(var(--primary))]"
-      />
-      {label}
-    </label>
   );
 }

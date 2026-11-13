@@ -15,6 +15,13 @@
       "when": 1794558689262,
       "tag": "0001_add_in_hero",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794569592376,
+      "tag": "0002_admin_tabs",
+      "breakpoints": true
     }
   ]
 }

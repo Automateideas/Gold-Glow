@@ -12,6 +12,8 @@ const supabaseHost = (() => {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Lets a second dev server run side-by-side without sharing the .next folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: supabaseHost
