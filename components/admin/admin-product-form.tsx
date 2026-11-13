@@ -30,6 +30,7 @@ type FormState = {
   reviews: string;
   bestSeller: boolean;
   isNew: boolean;
+  inHero: boolean;
   shade: string;
   short: string;
   description: string;
@@ -56,6 +57,7 @@ function initialState(p: Product | null): FormState {
     reviews: p ? String(p.reviews) : "0",
     bestSeller: p?.bestSeller ?? false,
     isNew: p?.new ?? false,
+    inHero: p?.hero ?? false,
     shade: p?.shade ?? "335 82% 46%",
     short: p?.short ?? "",
     description: p?.description ?? "",
@@ -131,6 +133,7 @@ export function AdminProductForm({
       reviews: parseInt(f.reviews || "0", 10) || 0,
       best_seller: f.bestSeller,
       is_new: f.isNew,
+      in_hero: f.inHero,
       images,
       shade: f.shade.trim() || "335 82% 46%",
       short: f.short.trim(),
@@ -268,6 +271,7 @@ export function AdminProductForm({
         <div className="mt-4 flex flex-wrap gap-5">
           <Toggle label="Bestseller" checked={f.bestSeller} onChange={(v) => set("bestSeller", v)} />
           <Toggle label="New" checked={f.isNew} onChange={(v) => set("isNew", v)} />
+          <Toggle label="Home carousel" checked={f.inHero} onChange={(v) => set("inHero", v)} />
           <Field label="Sort order" hint="lower = earlier">
             <Input type="number" value={f.sortOrder} onChange={(e) => set("sortOrder", e.target.value)} className="w-24" />
           </Field>

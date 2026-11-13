@@ -20,6 +20,8 @@ export type Product = {
   rating: number;
   reviews: number;
   bestSeller?: boolean;
+  /** Show in the homepage hero carousel. */
+  hero?: boolean;
   new?: boolean;
   images: string[];
   shade: string; // accent color used in UI cards (hsl)
@@ -60,6 +62,7 @@ export const products: Product[] = [
   {
     id: "gg-01",
     slug: "vitamin-c-face-wash",
+    hero: true,
     name: "Vitamin-C Face Wash",
     tagline: "Brighten • Cleanse • Glow",
     category: "Face Wash",
@@ -178,6 +181,7 @@ export const products: Product[] = [
   {
     id: "gg-05",
     slug: "aloe-vera-skin-cream",
+    hero: true,
     name: "Aloe Vera Light Moisturizing Cream",
     tagline: "Non-sticky 48h hydration",
     category: "Skin Cream",
@@ -210,6 +214,7 @@ export const products: Product[] = [
   {
     id: "gg-06",
     slug: "honey-almond-skin-cream",
+    hero: true,
     name: "Honey & Almond Nourishing Cream",
     tagline: "100% pure almond oil",
     category: "Skin Cream",
@@ -359,6 +364,7 @@ export const products: Product[] = [
   {
     id: "gg-11",
     slug: "premium-rose-water",
+    hero: true,
     name: "Premium Rose Water Toner",
     tagline: "100% pure & natural",
     category: "Toner & Mist",

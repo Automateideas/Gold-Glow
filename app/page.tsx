@@ -17,6 +17,7 @@ import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { StarRating } from "@/components/star-rating";
+import { HeroCarousel } from "@/components/hero-carousel";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,9 @@ export default async function HomePage() {
   const all = await getAllProducts();
   const bestsellers = all.filter((p) => p.bestSeller).slice(0, 4);
   const newIn = all.filter((p) => p.new || p.rating >= 4.7).slice(0, 8);
+  // Hero carousel: products flagged "Home carousel" in the admin (falls back to bestsellers).
+  const flagged = all.filter((p) => p.hero);
+  const heroProducts = (flagged.length ? flagged : bestsellers.length ? bestsellers : all).slice(0, 6);
 
   return (
     <>
@@ -86,18 +90,13 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex items-center gap-4">
               <div className="flex -space-x-3">
-                {[
-                  "aloe-cream",
-                  "rose-water",
-                  "honey-almond-cream",
-                  "vitamin-c-facewash",
-                ].map((img) => (
+                {heroProducts.slice(0, 4).map((p) => (
                   <div
-                    key={img}
+                    key={p.id}
                     className="h-11 w-11 overflow-hidden rounded-full border-2 border-background bg-secondary"
                   >
                     <Image
-                      src={`/products/${img}.jpg`}
+                      src={p.images[0]}
                       loading="eager"
                       alt=""
                       width={44}
@@ -117,43 +116,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Hero visual */}
-          <div className="relative">
-            <div className="relative mx-auto aspect-square w-full max-w-md">
-              <div className="absolute inset-0 rounded-[2.5rem] brand-gradient opacity-90" />
-              <div className="absolute inset-3 rounded-[2rem] bg-background/10 backdrop-blur-sm" />
-              <Image
-                src="/products/vitamin-c-facewash.jpg"
-                alt="Gold & Glow Vitamin-C Face Wash"
-                fill
-                priority
-                sizes="(max-width: 1024px) 90vw, 40vw"
-                className="object-contain p-8 drop-shadow-2xl"
-              />
-              {/* Floating cards */}
-              <div className="absolute -left-3 top-10 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-left-6">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/10">
-                    <Droplets className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold">Brightening</p>
-                    <p className="text-[0.65rem] text-muted-foreground">
-                      Vitamin-C rich
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -right-2 bottom-12 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-right-6">
-                <p className="text-xs font-semibold text-primary">
-                  ★ Bestseller
-                </p>
-                <p className="text-[0.65rem] text-muted-foreground">
-                  Loved by 2k+
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* Hero visual — product carousel (managed from /admin) */}
+          <HeroCarousel products={heroProducts} />
         </div>
       </section>
 

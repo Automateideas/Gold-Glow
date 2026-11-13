@@ -115,6 +115,7 @@ function cleanRow(input: unknown, id: string): GgProductInsert | string {
     reviews: Math.max(0, int(r.reviews)),
     best_seller: r.best_seller === true,
     is_new: r.is_new === true,
+    in_hero: r.in_hero === true,
     images,
     shade: str(r.shade, 50) || "335 82% 46%",
     short: str(r.short, 600),

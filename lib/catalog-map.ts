@@ -18,6 +18,7 @@ export type ProductRow = {
   reviews: number | null;
   best_seller: boolean | null;
   is_new: boolean | null;
+  in_hero: boolean | null;
   images: string[] | null;
   shade: string | null;
   short: string | null;
@@ -44,6 +45,7 @@ export function rowToProduct(r: ProductRow): Product {
     reviews: r.reviews ?? 0,
     bestSeller: r.best_seller ?? false,
     new: r.is_new ?? false,
+    hero: r.in_hero ?? false,
     images: r.images && r.images.length ? r.images : ["/products/logo-wordmark.jpg"],
     shade: r.shade ?? "335 82% 46%",
     short: r.short ?? "",
@@ -71,6 +73,7 @@ export function productToRow(p: Product, sortOrder = 0): ProductRow {
     reviews: p.reviews,
     best_seller: p.bestSeller ?? false,
     is_new: p.new ?? false,
+    in_hero: p.hero ?? false,
     images: p.images,
     shade: p.shade,
     short: p.short,

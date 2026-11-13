@@ -30,6 +30,7 @@ export const ggProducts = pgTable("gg_products", {
   reviews: integer("reviews").notNull().default(0),
   best_seller: boolean("best_seller").notNull().default(false),
   is_new: boolean("is_new").notNull().default(false),
+  in_hero: boolean("in_hero").notNull().default(false),
   images: text("images").array().notNull().default([]),
   shade: text("shade").notNull().default("335 82% 46%"),
   short: text("short").notNull().default(""),

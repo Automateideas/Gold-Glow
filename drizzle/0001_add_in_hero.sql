@@ -1,0 +1,1 @@
+ALTER TABLE "gg_products" ADD COLUMN "in_hero" boolean DEFAULT false NOT NULL;

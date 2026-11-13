@@ -186,6 +186,7 @@ export function AdminDashboard({
                       <div className="flex gap-1">
                         {p.bestSeller && <Badge variant="soft">Best</Badge>}
                         {p.new && <Badge variant="gold">New</Badge>}
+                        {p.hero && <Badge variant="outline">Carousel</Badge>}
                       </div>
                     </td>
                     <td className="px-4 py-3">
