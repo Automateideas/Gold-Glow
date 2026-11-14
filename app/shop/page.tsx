@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; search?: string }>;
 }) {
   const sp = await searchParams;
   // Old filter links (/shop?category=Face+Wash) now live at their own page.
@@ -38,7 +38,7 @@ export default async function ShopPage({
         </p>
       </div>
       <div className="mt-10">
-        <ShopClient initialCategory={sp.category} allProducts={allProducts} />
+        <ShopClient initialCategory={sp.category} allProducts={allProducts} focusSearch={sp.search === "1"} />
       </div>
     </div>
   );

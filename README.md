@@ -165,6 +165,13 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
 - **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
   Share → Add to Home Screen.
 
+## 📱 Mobile tab bar
+
+On phones (below the `lg` breakpoint) a bottom tab bar ([`components/mobile-bottom-nav.tsx`](components/mobile-bottom-nav.tsx)) gives
+thumb-reach navigation: **Home · Shop · Categories · Contact · Search**. Categories opens a bottom sheet with the 6 categories (plus
+All products and About us); Search opens `/shop?search=1` with the search box focused. The bar slides away while scrolling down and returns on
+scroll up, respects the iPhone home-bar safe area, and is not shown in the admin panel or on desktop.
+
 ## 🚀 Deploying to Vercel
 
 1. Import the repository in Vercel (framework: Next.js is detected automatically).

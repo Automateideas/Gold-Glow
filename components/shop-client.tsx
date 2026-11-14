@@ -22,10 +22,18 @@ const ALL = "All" as const;
 export function ShopClient({
   initialCategory,
   allProducts,
+  focusSearch = false,
 }: {
   initialCategory?: string;
   allProducts: Product[];
+  /** Open with the search box focused (the "Search" tab on phones). */
+  focusSearch?: boolean;
 }) {
+  const searchRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (focusSearch) searchRef.current?.focus();
+  }, [focusSearch]);
+
   const validInitial =
     initialCategory &&
     CATEGORIES.some((c) => c.name === initialCategory)
@@ -78,6 +86,8 @@ export function ShopClient({
         <div className="relative max-w-md">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="shop-search"
+            ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products, ingredients…"

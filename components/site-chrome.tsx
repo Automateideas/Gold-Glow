@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import type { SiteSettings } from "@/lib/settings";
 
 /**
@@ -24,8 +25,12 @@ export function SiteChrome({
   return (
     <>
       <SiteHeader settings={settings} />
-      <main>{children}</main>
-      <SiteFooter settings={settings} />
+      {/* Extra room at the bottom on phones so the tab bar never covers the footer. */}
+      <div className="pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0">
+        <main>{children}</main>
+        <SiteFooter settings={settings} />
+      </div>
+      <MobileBottomNav />
     </>
   );
 }

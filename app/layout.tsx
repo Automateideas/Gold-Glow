@@ -26,6 +26,7 @@ export const viewport: Viewport = {
   themeColor: "#d61570",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover", // lets env(safe-area-inset-*) work for the bottom tab bar
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -108,6 +109,7 @@ export default async function RootLayout({
         <PwaRegister />
         <Toaster
           position="bottom-right"
+          mobileOffset={{ bottom: "5.5rem" }}
           richColors
           toastOptions={{ style: { borderRadius: "14px" } }}
         />
