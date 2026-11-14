@@ -110,6 +110,17 @@ export function AdminSettings({ initial }: { initial: SiteSettings }) {
             </Field>
             <div className="rounded-xl border p-4">
               <Toggle
+                label="Animated home page (liquid hero, reveals, cursor glow)"
+                checked={s.homeMotion}
+                onChange={(v) => set("homeMotion", v)}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Turn this off for a calm, static home page. Visitors who prefer reduced motion never see
+                the animations either way.
+              </p>
+            </div>
+            <div className="rounded-xl border p-4">
+              <Toggle
                 label="Show the star-rating line under the buttons"
                 checked={s.showRating}
                 onChange={(v) => set("showRating", v)}

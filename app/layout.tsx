@@ -85,16 +85,19 @@ export default async function RootLayout({
     >
       <head>
         {/* Marks the page as "motion-enabled" before first paint so animated elements never flash.
-            Skipped for reduced-motion users; removed after 4s if the animation code never started.
+            Only when the home-page animations switch is on (Admin → Settings). Skipped for
+            reduced-motion users; removed after 4s if the animation code never started.
             A real inline script on purpose: next/script's beforeInteractive only runs after
             hydration starts, which is too late to prevent the flash. */}
-        <script
-          nonce={nonce}
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{var d=document.documentElement;if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('motion');setTimeout(function(){if(!d.dataset.motionReady)d.classList.remove('motion')},4000)}catch(e){}})()",
-          }}
-        />
+        {settings.homeMotion && (
+          <script
+            nonce={nonce}
+            dangerouslySetInnerHTML={{
+              __html:
+                "(function(){try{var d=document.documentElement;if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('motion');setTimeout(function(){if(!d.dataset.motionReady)d.classList.remove('motion')},4000)}catch(e){}})()",
+            }}
+          />
+        )}
       </head>
       <body
         className="min-h-screen font-sans"

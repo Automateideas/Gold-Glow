@@ -4,7 +4,7 @@ import * as React from "react";
 import { animate } from "animejs";
 import type { Product } from "@/lib/products";
 import { HeroCarousel } from "@/components/hero-carousel";
-import { BLOB_PATH_PHOTO, BLOB_SHAPES, blobPath, shapeAt } from "@/lib/blob";
+import { BLOB_SHAPES, blobPath, shapeAt } from "@/lib/blob";
 
 const SLIDE_MS = 6500;
 const MORPH_MS_PER_SHAPE = 6500;
@@ -22,7 +22,16 @@ const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: r
  *    (a circular liquid wipe), so the whole page takes on that product's colour.
  * The headline/buttons (server-rendered) come in as `children`.
  */
-export function HeroStage({ products, children }: { products: Product[]; children: React.ReactNode }) {
+export function HeroStage({
+  products,
+  animated = true,
+  children,
+}: {
+  products: Product[];
+  /** false = no wipe and no morph (Admin → Settings → Homepage animations off). */
+  animated?: boolean;
+  children: React.ReactNode;
+}) {
   const count = products.length;
   const first = products[0]?.shade ?? "335 82% 46%";
 
@@ -32,7 +41,6 @@ export function HeroStage({ products, children }: { products: Product[]; childre
   const sectionRef = React.useRef<HTMLElement>(null);
   const baseRef = React.useRef<HTMLDivElement>(null);
   const wipeRef = React.useRef<HTMLDivElement>(null);
-  const clipRef = React.useRef<SVGPathElement>(null);
   const ringRef = React.useRef<SVGPathElement>(null);
   const shownIndex = React.useRef(0);
   const wipeAnim = React.useRef<{ revert: () => unknown } | null>(null);
@@ -55,7 +63,7 @@ export function HeroStage({ products, children }: { products: Product[]; childre
     if (!shade || !section || !base || !wipe) return;
 
     section.style.setProperty("--tint", shade); // halo colour (fades via CSS)
-    if (prefersReducedMotion()) {
+    if (!animated || prefersReducedMotion()) {
       base.style.background = tintBg(shade);
       return;
     }
@@ -82,24 +90,26 @@ export function HeroStage({ products, children }: { products: Product[]; childre
         wipe.style.clipPath = "circle(0px at 50% 50%)";
       },
     });
-  }, [index, products]);
+  }, [index, products, animated]);
 
-  /* ---- the drop slowly changes shape ---- */
+  /* ---- the halo slowly changes shape (≈30 fps is plenty for a slow drift) ---- */
   React.useEffect(() => {
-    const clip = clipRef.current;
     const ring = ringRef.current;
     const section = sectionRef.current;
-    if (!clip || !ring || !section || prefersReducedMotion()) return;
+    if (!ring || !section || !animated || prefersReducedMotion()) return;
 
     const n = BLOB_SHAPES.length;
     const state = { t: 0 };
+    let last = 0;
     const morph = animate(state, {
       t: [0, n],
       duration: n * MORPH_MS_PER_SHAPE,
       ease: "linear",
       loop: true,
       onUpdate: () => {
-        clip.setAttribute("d", blobPath(shapeAt(BLOB_SHAPES, state.t)));
+        const now = performance.now();
+        if (now - last < 33) return;
+        last = now;
         ring.setAttribute("d", blobPath(shapeAt(BLOB_SHAPES, state.t + 1.5)));
       },
     });
@@ -109,9 +119,8 @@ export function HeroStage({ products, children }: { products: Product[]; childre
     return () => {
       io.disconnect();
       morph.revert();
-      clip.setAttribute("d", BLOB_PATH_PHOTO);
     };
-  }, []);
+  }, [animated]);
 
   React.useEffect(
     () => () => {
@@ -143,7 +152,6 @@ export function HeroStage({ products, children }: { products: Product[]; childre
           index={index}
           onSelect={setIndex}
           onPause={setPaused}
-          clipRef={clipRef}
           ringRef={ringRef}
         />
       </div>

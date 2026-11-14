@@ -165,6 +165,23 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
 - **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
   Share → Add to Home Screen.
 
+## 🚀 Deploying to Vercel
+
+1. Import the repository in Vercel (framework: Next.js is detected automatically).
+2. Add these **Environment Variables** (Production + Preview), the same names as in `.env.example`:
+   `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (the `sb_secret_...` key),
+   `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `NEXT_PUBLIC_SITE_URL` (your real domain).
+3. Deploy. The database tables already exist in Supabase; for a new database run `npm run db:migrate` once from your computer.
+
+Speed notes:
+- [`vercel.json`](vercel.json) pins the functions to **Mumbai (`bom1`)**, next to the Supabase database
+  (ap-south-1). Without it Vercel defaults to the US and every database call crosses the world.
+- The catalogue, settings, reviews, category and policy text are kept in Next's data cache for 5 minutes, and
+  every Save in the admin refreshes it straight away (`updateTag`). Pages are still rendered per request
+  (needed for the CSP nonce), but they no longer wait on the database.
+- The home-page animations can be switched off in **Admin → Settings → Homepage** ("Animated home page"),
+  handy for comparing the animated and the calm version in front of a client.
+
 ## ✨ "Liquid Glow" home page (Anime.js)
 
 The home page uses [Anime.js](https://animejs.com) v4 for a look built around the brand's *glow*, not generic fade-ups:

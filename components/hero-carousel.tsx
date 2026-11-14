@@ -9,23 +9,21 @@ import { BLOB_PATH_PHOTO, BLOB_PATH_RING } from "@/lib/blob";
 import { cn } from "@/lib/utils";
 
 /**
- * The hero product visual: each product sits inside a soft, slowly morphing
- * "liquid drop" with a halo in that product's own colour. The shape and the
- * slide state are driven by HeroStage; this component only draws them.
+ * The hero product visual: each product sits inside a soft "liquid drop" with a
+ * halo in that product's own colour. Only the halo changes shape (cheap to paint);
+ * the photo keeps a fixed drop-shaped mask. HeroStage drives the slide state.
  */
 export function HeroCarousel({
   products,
   index,
   onSelect,
   onPause,
-  clipRef,
   ringRef,
 }: {
   products: Product[];
   index: number;
   onSelect: (i: number) => void;
   onPause: (paused: boolean) => void;
-  clipRef: React.RefObject<SVGPathElement | null>;
   ringRef: React.RefObject<SVGPathElement | null>;
 }) {
   const count = products.length;
@@ -50,16 +48,22 @@ export function HeroCarousel({
         <svg width="0" height="0" className="absolute" aria-hidden focusable="false">
           <defs>
             <clipPath id="gg-blob-clip" clipPathUnits="objectBoundingBox">
-              <path ref={clipRef} d={BLOB_PATH_PHOTO} />
+              <path d={BLOB_PATH_PHOTO} />
             </clipPath>
           </defs>
         </svg>
+
+        {/* Soft coloured glow (static, so the browser paints it once) */}
+        <div
+          aria-hidden
+          className="absolute inset-[10%] rounded-full blur-3xl transition-colors duration-[900ms]"
+          style={{ backgroundColor: "hsl(var(--tint) / 0.35)" }}
+        />
 
         {/* Tinted halo: a second, offset blob in the product's colour */}
         <svg
           viewBox="0 0 1 1"
           className="absolute inset-0 h-full w-full overflow-visible"
-          style={{ filter: "drop-shadow(0 26px 44px hsl(var(--tint) / 0.38))" }}
           aria-hidden
           focusable="false"
         >
@@ -100,7 +104,7 @@ export function HeroCarousel({
         </div>
 
         {/* Floating cards follow the visible product */}
-        <div className="pointer-events-none absolute -left-3 top-10 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-left-6">
+        <div className="pointer-events-none absolute -left-3 top-10 rounded-2xl bg-background/95 p-3 shadow-lg sm:-left-6">
           <div key={current.id} className="flex animate-fade-up items-center gap-2">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10">
               <Droplets className="h-4 w-4 text-primary" />
@@ -111,7 +115,7 @@ export function HeroCarousel({
             </div>
           </div>
         </div>
-        <div className="pointer-events-none absolute -right-2 bottom-12 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-right-6">
+        <div className="pointer-events-none absolute -right-2 bottom-12 rounded-2xl bg-background/95 p-3 shadow-lg sm:-right-6">
           <div key={current.id} className="animate-fade-up">
             {current.bestSeller ? (
               <>

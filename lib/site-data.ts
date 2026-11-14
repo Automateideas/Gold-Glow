@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { and, asc, count, desc, eq, gte, max, sql } from "drizzle-orm";
 import { dbConfigured, getDb } from "@/db";
 import {
@@ -24,14 +25,36 @@ export const SETTINGS_KEY = "site";
 export const CATEGORIES_KEY = "categories";
 export const POLICIES_KEY = "pages";
 
+/** Cache tags. The admin calls updateTag() with these after every save. */
+export const TAGS = {
+  settings: "settings",
+  reviews: "reviews",
+  categories: "categories",
+  pages: "pages",
+} as const;
+
+/** Reads one JSON row from gg_settings; null if there is none. Throws if the database fails. */
+const readSettingsRow = (key: string) =>
+  unstable_cache(
+    async (): Promise<Record<string, unknown> | null> => {
+      const rows = await withRetry(() =>
+        getDb().select().from(ggSettings).where(eq(ggSettings.key, key)).limit(1)
+      );
+      return (rows[0]?.data as Record<string, unknown> | undefined) ?? null;
+    },
+    [`gg-settings-row-v1-${key}`],
+    { tags: [key === SETTINGS_KEY ? TAGS.settings : key === CATEGORIES_KEY ? TAGS.categories : TAGS.pages], revalidate: 300 }
+  );
+
+const cachedSite = readSettingsRow(SETTINGS_KEY);
+const cachedCategories = readSettingsRow(CATEGORIES_KEY);
+const cachedPolicies = readSettingsRow(POLICIES_KEY);
+
 /** Site content (texts, contact info, banner…). Falls back to the defaults. */
 export const getSettings = cache(async (): Promise<SiteSettings> => {
   if (!dbConfigured()) return DEFAULT_SETTINGS;
   try {
-    const rows = await withRetry(() =>
-      getDb().select().from(ggSettings).where(eq(ggSettings.key, SETTINGS_KEY)).limit(1)
-    );
-    return mergeSettings(rows[0]?.data);
+    return mergeSettings(await cachedSite());
   } catch (e) {
     console.error("[site-data] settings:", friendlyDbError(e));
     return DEFAULT_SETTINGS;
@@ -57,11 +80,16 @@ async function allReviewRows(): Promise<AdminReview[]> {
   }));
 }
 
+const cachedReviews = unstable_cache(async (): Promise<AdminReview[]> => withRetry(allReviewRows), ["gg-reviews-v1"], {
+  tags: [TAGS.reviews],
+  revalidate: 300,
+});
+
 /** Reviews for the homepage: the client's published ones, else the built-ins. */
 export const getPublishedReviews = cache(async (): Promise<Review[]> => {
   if (!dbConfigured()) return DEFAULT_REVIEWS;
   try {
-    const rows = await withRetry(allReviewRows);
+    const rows = await cachedReviews();
     if (rows.length === 0) return DEFAULT_REVIEWS;
     return rows.filter((r) => r.published);
   } catch {
@@ -212,10 +240,7 @@ export const getAnalytics = (days = 30) =>
 export const getCategoryOverrides = cache(async (): Promise<Record<string, CategoryOverride>> => {
   if (!dbConfigured()) return {};
   try {
-    const rows = await withRetry(() =>
-      getDb().select().from(ggSettings).where(eq(ggSettings.key, CATEGORIES_KEY)).limit(1)
-    );
-    const data = rows[0]?.data;
+    const data = await cachedCategories();
     return data && typeof data === "object" ? (data as Record<string, CategoryOverride>) : {};
   } catch {
     return {};
@@ -236,10 +261,7 @@ export async function getCategoryPage(slug: string): Promise<CategoryPage | unde
 export const getPolicyOverrides = cache(async (): Promise<Record<string, PolicyOverride>> => {
   if (!dbConfigured()) return {};
   try {
-    const rows = await withRetry(() =>
-      getDb().select().from(ggSettings).where(eq(ggSettings.key, POLICIES_KEY)).limit(1)
-    );
-    const data = rows[0]?.data;
+    const data = await cachedPolicies();
     return data && typeof data === "object" ? (data as Record<string, PolicyOverride>) : {};
   } catch {
     return {};

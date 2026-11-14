@@ -17,6 +17,8 @@ export type SiteSettings = {
   heroAccent: string;
   heroDescription: string;
   showRating: boolean;
+  /** Liquid Glow animations on the home page. Off = a calm, static page. */
+  homeMotion: boolean;
   ratingScore: string;
   ratingText: string;
 
@@ -59,6 +61,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroDescription:
     "Herbal-inspired skincare and body care that treats your skin gently and lights it up beautifully. Clean formulas, radiant results.",
   showRating: true,
+  homeMotion: true,
   ratingScore: "4.8/5",
   ratingText: "from 2,300+ happy customers",
 

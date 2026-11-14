@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { asc } from "drizzle-orm";
 import { dbConfigured, getDb } from "@/db";
 import { ggProducts } from "@/db/schema";
@@ -45,22 +46,51 @@ export function friendlyDbError(e: unknown): string {
   return message;
 }
 
-/** Cached per request, so one page render hits the database only once. */
-const fetchRows = cache(async (): Promise<{ rows: ProductRow[]; error?: string }> => {
+export const PRODUCTS_TAG = "products";
+
+/** One database read of the whole catalogue. Throws if the database can't be reached. */
+async function queryRows(): Promise<ProductRow[]> {
+  return withRetry(() =>
+    getDb()
+      .select()
+      .from(ggProducts)
+      .orderBy(asc(ggProducts.sort_order), asc(ggProducts.created_at))
+  ) as Promise<ProductRow[]>;
+}
+
+/** Fresh read for the admin panel (never cached), with a readable error message. */
+async function fetchRowsFresh(): Promise<{ rows: ProductRow[]; error?: string }> {
   if (!dbConfigured()) {
     return { rows: [], error: "Database isn't configured yet (set DATABASE_URL in .env.local)." };
   }
   try {
-    const rows = await withRetry(() =>
-      getDb()
-        .select()
-        .from(ggProducts)
-        .orderBy(asc(ggProducts.sort_order), asc(ggProducts.created_at))
-    );
-    return { rows };
+    return { rows: await queryRows() };
   } catch (e) {
     console.error("[catalog] database error:", pgError(e));
     return { rows: [], error: friendlyDbError(e) };
+  }
+}
+
+/**
+ * Storefront catalogue, kept in Next's data cache for 5 minutes. Saving anything in the
+ * admin calls updateTag("products"), so edits still show up immediately. A failed read
+ * throws, so errors are never cached.
+ */
+const loadProductsCached = unstable_cache(
+  async (): Promise<Product[]> => (await queryRows()).map(rowToProduct),
+  ["gg-products-v1"],
+  { tags: [PRODUCTS_TAG], revalidate: 300 }
+);
+
+/** Per request, so a page that asks several times reads the cache only once. */
+const loadStorefrontProducts = cache(async (): Promise<Product[]> => {
+  if (!dbConfigured()) return seedProducts;
+  try {
+    const items = await loadProductsCached();
+    return items.length ? items : seedProducts;
+  } catch (e) {
+    console.error("[catalog] database error:", pgError(e));
+    return seedProducts;
   }
 });
 
@@ -70,14 +100,12 @@ const fetchRows = cache(async (): Promise<{ rows: ProductRow[]; error?: string }
  * back to the built-in seed so the site always renders.
  */
 export async function getAllProducts(): Promise<Product[]> {
-  const { rows, error } = await fetchRows();
-  if (error || rows.length === 0) return seedProducts;
-  return rows.map(rowToProduct).filter((p) => p.published !== false);
+  return (await loadStorefrontProducts()).filter((p) => p.published !== false);
 }
 
 /** Products for the admin dashboard (no seed fallback, surfaces errors). */
 export async function getAdminProducts(): Promise<{ items: Product[]; error?: string }> {
-  const { rows, error } = await fetchRows();
+  const { rows, error } = await fetchRowsFresh();
   return { items: rows.map(rowToProduct), error };
 }
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   checkCredentials,
@@ -174,6 +175,7 @@ export async function saveProductAction(payload: {
     } else {
       await db.insert(ggProducts).values(row);
     }
+    updateTag("products");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -185,6 +187,7 @@ export async function deleteProductAction(id: string): Promise<ActionResult> {
   if (denied) return { ok: false, error: denied };
   try {
     await getDb().delete(ggProducts).where(eq(ggProducts.id, String(id)));
+    updateTag("products");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -209,6 +212,7 @@ export async function importStarterAction(): Promise<ActionResult> {
             .concat([["updated_at", sql`now()`]])
         ),
       });
+    updateTag("products");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -235,6 +239,7 @@ export async function duplicateProductAction(id: string): Promise<ActionResult> 
       created_at: new Date(),
       updated_at: new Date(),
     });
+    updateTag("products");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -246,6 +251,7 @@ export async function setProductPublishedAction(id: string, published: boolean):
   if (denied) return { ok: false, error: denied };
   try {
     await getDb().update(ggProducts).set({ published: !!published }).where(eq(ggProducts.id, String(id)));
+    updateTag("products");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -284,6 +290,7 @@ export async function saveSettingsAction(input: unknown): Promise<ActionResult> 
       .insert(ggSettings)
       .values({ key: "site", data: s })
       .onConflictDoUpdate({ target: ggSettings.key, set: { data: s, updated_at: new Date() } });
+    updateTag("settings");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -295,6 +302,7 @@ export async function resetSettingsAction(): Promise<ActionResult> {
   if (denied) return { ok: false, error: denied };
   try {
     await getDb().delete(ggSettings).where(eq(ggSettings.key, "site"));
+    updateTag("settings");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -326,6 +334,7 @@ export async function saveReviewAction(payload: { id?: string; row: unknown }): 
     } else {
       await db.insert(ggReviews).values({ id: `rv-${Date.now().toString(36)}`, ...values });
     }
+    updateTag("reviews");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -337,6 +346,7 @@ export async function deleteReviewAction(id: string): Promise<ActionResult> {
   if (denied) return { ok: false, error: denied };
   try {
     await getDb().delete(ggReviews).where(eq(ggReviews.id, String(id)));
+    updateTag("reviews");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -363,6 +373,7 @@ export async function importDefaultReviewsAction(): Promise<ActionResult> {
         }))
       )
       .onConflictDoNothing();
+    updateTag("reviews");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -441,6 +452,7 @@ export async function saveCategoryAction(payload: { slug: string; data: unknown 
     const all = await readCategoryOverrides();
     all[slug] = { h1, metaTitle, metaDescription, intro, tips };
     await writeCategoryOverrides(all);
+    updateTag("categories");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -454,6 +466,7 @@ export async function resetCategoryAction(slug: string): Promise<ActionResult> {
     const all = await readCategoryOverrides();
     delete all[String(slug)];
     await writeCategoryOverrides(all);
+    updateTag("categories");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -507,6 +520,7 @@ export async function savePolicyAction(payload: { slug: string; data: unknown })
     const all = await readPolicyOverrides();
     all[slug] = { title, metaDescription, intro, sections, updated };
     await writePolicyOverrides(all);
+    updateTag("pages");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };
@@ -520,6 +534,7 @@ export async function resetPolicyAction(slug: string): Promise<ActionResult> {
     const all = await readPolicyOverrides();
     delete all[String(slug)];
     await writePolicyOverrides(all);
+    updateTag("pages");
     return { ok: true };
   } catch (e) {
     return { ok: false, error: friendlyDbError(e) };

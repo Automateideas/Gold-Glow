@@ -25,7 +25,8 @@ export function getDb(): Db {
   if (cached) void Promise.resolve(cached.end?.()).catch(() => {});
 
   // prepare:false keeps it compatible with Supabase's transaction pooler.
-  const client = postgres(url, { prepare: false, max: 5, idle_timeout: 20, connect_timeout: 15 });
+  // On Vercel every function instance has its own pool, so keep it tiny.
+  const client = postgres(url, { prepare: false, max: process.env.VERCEL ? 1 : 5, idle_timeout: 20, connect_timeout: 15 });
   const db = drizzle(client, { schema });
   globalForDb.__ggDbPool = { url, db, end: () => client.end({ timeout: 2 }) };
   return db;

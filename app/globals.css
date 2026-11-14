@@ -130,8 +130,7 @@
 
 /* Intro: hero text is uncovered by a circle that spreads from the product drop. */
 html.motion [data-motion-scope] [data-ripple] {
-  --r: 0;
-  clip-path: circle(calc(var(--r) * 1%) at var(--ox, 100%) var(--oy, 50%));
+  clip-path: circle(0px at 100% 50%);
 }
 html.motion [data-motion-scope] [data-ripple-source] {
   opacity: 0;
@@ -139,18 +138,17 @@ html.motion [data-motion-scope] [data-ripple-source] {
 
 /* Headings and blocks: a feathered sweep of light (soft edge, not a hard wipe). */
 html.motion [data-motion-scope] [data-reveal] {
-  --p: 0;
-  -webkit-mask-image: linear-gradient(var(--dir, 90deg), #000 calc(var(--p) * 1% - 16%), transparent calc(var(--p) * 1%));
-  mask-image: linear-gradient(var(--dir, 90deg), #000 calc(var(--p) * 1% - 16%), transparent calc(var(--p) * 1%));
+  -webkit-mask-image: linear-gradient(90deg, #000 -16%, transparent 0%);
+  mask-image: linear-gradient(90deg, #000 -16%, transparent 0%);
 }
 html.motion [data-motion-scope] [data-reveal="right"] {
-  --dir: 270deg;
+  -webkit-mask-image: linear-gradient(270deg, #000 -16%, transparent 0%);
+  mask-image: linear-gradient(270deg, #000 -16%, transparent 0%);
 }
 
 /* Grids: each card fills up from the bottom, like liquid filling a bottle. */
 html.motion [data-motion-scope] [data-reveal-stagger] > * {
-  --fill: 100;
-  clip-path: inset(calc(var(--fill) * 1%) 0 0 0 round 22px);
+  clip-path: inset(100% 0 0 0 round 22px);
 }
 
 /* A soft gold light that follows the mouse (desktop only). */
@@ -168,21 +166,19 @@ html.motion [data-motion-scope] [data-reveal-stagger] > * {
   will-change: transform;
 }
 
-/* ...and it lights up whichever card it is over. */
+/* ...and it lights up whichever card it is over (JS paints the gradient into .glow-layer). */
 [data-glow] {
   position: relative;
 }
-[data-glow]::after {
-  content: "";
+.glow-layer {
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.35s;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--gold) / 0.42), hsl(var(--primary) / 0.12) 48%, transparent 72%);
 }
-[data-glow]:hover::after {
+[data-glow]:hover > .glow-layer {
   opacity: 1;
 }
 

@@ -71,7 +71,7 @@ export default async function HomePage() {
 
   return (
     <div data-motion-scope>
-      <HomeMotion />
+      {settings.homeMotion && <HomeMotion />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -79,7 +79,7 @@ export default async function HomePage() {
         }}
       />
       {/* HERO — "Liquid Glow": the product floats in a liquid drop and its colour floods the hero (HeroStage) */}
-      <HeroStage products={heroProducts}>
+      <HeroStage products={heroProducts} animated={settings.homeMotion}>
         <div data-ripple>
           <Badge variant="soft" className="mb-5 gap-1.5 px-3 py-1.5">
             <Sparkles className="h-3.5 w-3.5" /> {settings.heroBadge}
