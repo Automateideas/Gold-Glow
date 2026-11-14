@@ -103,3 +103,13 @@ export const ggSettings = pgTable("gg_settings", {
   data: jsonb("data").$type<Record<string, unknown>>().notNull().default({}),
   updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();
+
+/**
+ * Counters for rate limits (login lock-out, contact and newsletter forms). Kept in
+ * the database so a server restart or a second server instance can't reset them.
+ */
+export const ggRateLimits = pgTable("gg_rate_limits", {
+  key: text("key").primaryKey(),
+  count: integer("count").notNull().default(0),
+  reset_at: timestamp("reset_at", { withTimezone: true }).notNull(),
+}).enableRLS();

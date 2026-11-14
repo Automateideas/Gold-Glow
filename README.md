@@ -165,6 +165,19 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
 - **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
   Share → Add to Home Screen.
 
+## 🔒 Security & code quality
+
+- **Security headers** on every response (`next.config.mjs`): nosniff, X-Frame-Options DENY,
+  Referrer-Policy, Permissions-Policy, COOP, and HSTS in production.
+- **Content-Security-Policy with a per-request nonce** (`proxy.ts`, production only): only our own
+  scripts can run. All pages are rendered per request (`dynamic = "force-dynamic"` in the root layout),
+  which nonces need and which keeps editable header/footer text fresh.
+- **Rate limits stored in the database** (`gg_rate_limits`): admin login locks for 15 minutes after
+  5 wrong attempts per IP; contact and newsletter forms allow 5 per hour per IP. They survive restarts.
+  The click tracker uses a lightweight in-memory limit.
+- **Lint:** `npm run lint` (ESLint 9 + `eslint-config-next`, flat config in `eslint.config.mjs`).
+  `next lint` no longer exists in Next.js 16.
+
 ## 🛠 Tech
 
 Next.js 16 (Turbopack) · React 19 · TypeScript 5.9 · Tailwind CSS v4 · Drizzle ORM · Radix UI ·

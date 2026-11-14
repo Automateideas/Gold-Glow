@@ -1,6 +1,9 @@
 import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import { and, eq, gt, sql } from "drizzle-orm";
+import { dbConfigured, getDb } from "@/db";
+import { ggRateLimits } from "@/db/schema";
 
 /**
  * Admin auth without any third-party auth service.
@@ -87,29 +90,67 @@ export async function isAdminSession(): Promise<boolean> {
 }
 
 /* ------------------------------------------------------------------ */
-/* Brute-force guard: 5 wrong attempts per IP → locked for 15 minutes. */
+/* Brute-force guard: 5 wrong attempts per IP -> locked for 15 minutes. */
+/* Stored in the database (survives restarts); memory is the fallback. */
 /* ------------------------------------------------------------------ */
 const MAX_FAILS = 5;
 const LOCK_MS = 15 * 60 * 1000;
+const lockKey = (ip: string) => `login:${ip}`;
 const fails = new Map<string, { n: number; until: number }>();
 
-export function isLockedOut(key: string): boolean {
-  const rec = fails.get(key);
+export async function isLockedOut(ip: string): Promise<boolean> {
+  if (dbConfigured()) {
+    try {
+      const rows = await getDb()
+        .select({ count: ggRateLimits.count })
+        .from(ggRateLimits)
+        .where(and(eq(ggRateLimits.key, lockKey(ip)), gt(ggRateLimits.reset_at, sql`now()`)))
+        .limit(1);
+      return (rows[0]?.count ?? 0) >= MAX_FAILS;
+    } catch {
+      /* fall through to memory */
+    }
+  }
+  const rec = fails.get(ip);
   if (!rec) return false;
-  if (rec.until && rec.until < Date.now()) {
-    fails.delete(key);
+  if (rec.until < Date.now()) {
+    fails.delete(ip);
     return false;
   }
   return rec.n >= MAX_FAILS;
 }
 
-export function recordFailure(key: string) {
-  const rec = fails.get(key) ?? { n: 0, until: 0 };
+export async function recordFailure(ip: string): Promise<void> {
+  if (dbConfigured()) {
+    try {
+      const until = new Date(Date.now() + LOCK_MS).toISOString();
+      await getDb()
+        .insert(ggRateLimits)
+        .values({ key: lockKey(ip), count: 1, reset_at: new Date(until) })
+        .onConflictDoUpdate({
+          target: ggRateLimits.key,
+          set: {
+            count: sql`case when ${ggRateLimits.reset_at} <= now() then 1 else ${ggRateLimits.count} + 1 end`,
+            reset_at: sql`${until}::timestamptz`, // each miss extends the lock window
+          },
+        });
+      return;
+    } catch {
+      /* fall through to memory */
+    }
+  }
+  const rec = fails.get(ip) ?? { n: 0, until: 0 };
   rec.n += 1;
   rec.until = Date.now() + LOCK_MS;
-  fails.set(key, rec);
+  fails.set(ip, rec);
 }
 
-export function clearFailures(key: string) {
-  fails.delete(key);
+export async function clearFailures(ip: string): Promise<void> {
+  fails.delete(ip);
+  if (!dbConfigured()) return;
+  try {
+    await getDb().delete(ggRateLimits).where(eq(ggRateLimits.key, lockKey(ip)));
+  } catch {
+    /* ignore */
+  }
 }

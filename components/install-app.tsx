@@ -8,6 +8,13 @@ type InstallEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+// Browser facts that never change while the page is open.
+const noSubscribe = () => () => {};
+const isStandalone = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+const isIOSDevice = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 /**
  * Small "Install app" button for the footer.
  *  - Chrome / Edge / Android: uses the browser's install prompt when it is available.
@@ -15,24 +22,19 @@ type InstallEvent = Event & {
  *  - Hidden once the site is already running as an installed app.
  */
 export function InstallApp() {
+  const standalone = React.useSyncExternalStore(noSubscribe, isStandalone, () => true); // hidden on the server
+  const isIOS = React.useSyncExternalStore(noSubscribe, isIOSDevice, () => false);
   const [promptEvent, setPromptEvent] = React.useState<InstallEvent | null>(null);
-  const [isIOS, setIsIOS] = React.useState(false);
-  const [installed, setInstalled] = React.useState(true); // hidden until we know
+  const [justInstalled, setJustInstalled] = React.useState(false);
   const [showHint, setShowHint] = React.useState(false);
 
   React.useEffect(() => {
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    setInstalled(standalone);
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent));
-
     const onPrompt = (e: Event) => {
       e.preventDefault(); // keep it for our own button
       setPromptEvent(e as InstallEvent);
     };
     const onInstalled = () => {
-      setInstalled(true);
+      setJustInstalled(true);
       setPromptEvent(null);
     };
     window.addEventListener("beforeinstallprompt", onPrompt);
@@ -43,13 +45,13 @@ export function InstallApp() {
     };
   }, []);
 
-  if (installed || (!promptEvent && !isIOS)) return null;
+  if (standalone || justInstalled || (!promptEvent && !isIOS)) return null;
 
   async function install() {
     if (promptEvent) {
       await promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
-      if (outcome === "accepted") setInstalled(true);
+      if (outcome === "accepted") setJustInstalled(true);
       setPromptEvent(null);
     } else {
       setShowHint((v) => !v);

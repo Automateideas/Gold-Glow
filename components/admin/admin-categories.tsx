@@ -55,10 +55,12 @@ export function AdminCategories({
   const [form, setForm] = React.useState<Form>(() => toForm(current));
   const [saving, setSaving] = React.useState(false);
 
-  // Switch the editor when another category is picked, or after a save/reset refresh.
-  React.useEffect(() => {
+  // Reload the form when another category is picked, or after a save/reset refresh.
+  const [loaded, setLoaded] = React.useState(current);
+  if (loaded !== current) {
+    setLoaded(current);
     setForm(toForm(current));
-  }, [current]);
+  }
 
   const dirty = JSON.stringify(form) !== JSON.stringify(toForm(current));
   const customized = (s: string) => !!overrides[s] && Object.keys(overrides[s]).length > 0;

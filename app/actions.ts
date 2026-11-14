@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { dbConfigured, getDb } from "@/db";
 import { ggMessages, ggSubscribers } from "@/db/schema";
 import { friendlyDbError } from "@/lib/catalog";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimitPersistent } from "@/lib/rate-limit";
 
 export type FormResult = { ok: true; message: string } | { ok: false; error: string };
 
@@ -32,7 +32,7 @@ export async function submitContactAction(formData: FormData): Promise<FormResul
   if (!name || !isEmail(email) || !message) {
     return { ok: false, error: "Please fill in your name, a valid email and a message." };
   }
-  if (!rateLimit(`contact:${await clientIp()}`, 5, 60 * 60 * 1000)) {
+  if (!(await rateLimitPersistent(`contact:${await clientIp()}`, 5, 60 * 60 * 1000))) {
     return { ok: false, error: "Too many messages from your network. Please try again later." };
   }
   if (!dbConfigured()) {
@@ -53,7 +53,7 @@ export async function subscribeAction(formData: FormData): Promise<FormResult> {
 
   const email = clean(formData.get("email"), 254).toLowerCase();
   if (!isEmail(email)) return { ok: false, error: "Please enter a valid email address." };
-  if (!rateLimit(`sub:${await clientIp()}`, 5, 60 * 60 * 1000)) {
+  if (!(await rateLimitPersistent(`sub:${await clientIp()}`, 5, 60 * 60 * 1000))) {
     return { ok: false, error: "Too many attempts. Please try again later." };
   }
   if (!dbConfigured()) return { ok: false, error: "Sign-ups are unavailable right now." };

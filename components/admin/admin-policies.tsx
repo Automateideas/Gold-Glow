@@ -49,9 +49,12 @@ export function AdminPolicies({
   const [form, setForm] = React.useState<Form>(() => toForm(current));
   const [saving, setSaving] = React.useState(false);
 
-  React.useEffect(() => {
+  // Reload the form when another page is picked, or after a save/reset refresh.
+  const [loaded, setLoaded] = React.useState(current);
+  if (loaded !== current) {
+    setLoaded(current);
     setForm(toForm(current));
-  }, [current]);
+  }
 
   const dirty = sig(form) !== sig(toForm(current));
   const edited = (s: string) => !!overrides[s] && Object.keys(overrides[s]).length > 0;

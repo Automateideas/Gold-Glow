@@ -40,7 +40,7 @@ export async function loginAction(
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 
-  if (isLockedOut(ip)) {
+  if (await isLockedOut(ip)) {
     return { error: "Too many wrong attempts. Please try again in 15 minutes." };
   }
 
@@ -48,12 +48,12 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   if (!checkCredentials(username, password)) {
-    recordFailure(ip);
+    await recordFailure(ip);
     await new Promise((r) => setTimeout(r, 700)); // slow down guessing
     return { error: "Wrong ID or password." };
   }
 
-  clearFailures(ip);
+  await clearFailures(ip);
   await startAdminSession();
   redirect("/admin");
 }
@@ -163,7 +163,8 @@ export async function saveProductAction(payload: {
   try {
     const db = getDb();
     if (editing) {
-      const { id: _id, ...changes } = row;
+      const changes: Partial<GgProductInsert> = { ...row };
+      delete changes.id; // the id never changes
       const done = await db
         .update(ggProducts)
         .set(changes)

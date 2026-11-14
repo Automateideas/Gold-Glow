@@ -21,7 +21,7 @@ export function HeroCarousel({ products }: { products: Product[] }) {
 
   const go = React.useCallback(
     (to: number) => setIndex(((to % count) + count) % count),
-    [count]
+    [count],
   );
 
   React.useEffect(() => {
@@ -47,7 +47,7 @@ export function HeroCarousel({ products }: { products: Product[] }) {
     >
       <div className="relative mx-auto aspect-square w-full max-w-md">
         <div className="absolute inset-0 rounded-[2.5rem] brand-gradient opacity-90" />
-        <div className="absolute inset-3 rounded-[2rem] bg-background/10 backdrop-blur-sm" />
+        <div className="absolute inset-3 rounded-4xl bg-background/10 backdrop-blur-sm" />
 
         {products.map((p, i) => (
           <Link
@@ -58,7 +58,9 @@ export function HeroCarousel({ products }: { products: Product[] }) {
             aria-label={`${p.name} — view product`}
             className={cn(
               "absolute inset-0 transition-all duration-700 ease-out",
-              i === index ? "scale-100 opacity-100" : "pointer-events-none scale-95 opacity-0"
+              i === index
+                ? "scale-100 opacity-100"
+                : "pointer-events-none scale-95 opacity-0",
             )}
           >
             <Image
@@ -75,12 +77,17 @@ export function HeroCarousel({ products }: { products: Product[] }) {
 
         {/* Floating cards — follow the visible product */}
         <div className="pointer-events-none absolute -left-3 top-10 rounded-2xl bg-background/95 p-3 shadow-lg backdrop-blur sm:-left-6">
-          <div key={current.id} className="flex animate-fade-up items-center gap-2">
+          <div
+            key={current.id}
+            className="flex animate-fade-up items-center gap-2"
+          >
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10">
               <Droplets className="h-4 w-4 text-primary" />
             </div>
-            <div className="max-w-[9.5rem]">
-              <p className="truncate text-xs font-semibold">{current.category}</p>
+            <div className="max-w-38 truncate">
+              <p className="truncate text-xs font-semibold">
+                {current.category}
+              </p>
               <p className="truncate text-[0.65rem] text-muted-foreground">
                 {current.tagline}
               </p>
@@ -91,8 +98,12 @@ export function HeroCarousel({ products }: { products: Product[] }) {
           <div key={current.id} className="animate-fade-up">
             {current.bestSeller ? (
               <>
-                <p className="text-xs font-semibold text-primary">★ Bestseller</p>
-                <p className="text-[0.65rem] text-muted-foreground">Loved by 2k+</p>
+                <p className="text-xs font-semibold text-primary">
+                  ★ Bestseller
+                </p>
+                <p className="text-[0.65rem] text-muted-foreground">
+                  Loved by 2k+
+                </p>
               </>
             ) : (
               <>
@@ -119,7 +130,10 @@ export function HeroCarousel({ products }: { products: Product[] }) {
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="flex min-w-0 flex-col items-center gap-2">
-            <p className="max-w-full truncate text-sm font-medium" aria-live="polite">
+            <p
+              className="max-w-full truncate text-sm font-medium"
+              aria-live="polite"
+            >
               {current.name}
             </p>
             <div className="flex items-center gap-1.5">
@@ -132,7 +146,9 @@ export function HeroCarousel({ products }: { products: Product[] }) {
                   aria-current={i === index}
                   className={cn(
                     "h-1.5 rounded-full transition-all",
-                    i === index ? "w-6 bg-primary" : "w-1.5 bg-primary/25 hover:bg-primary/50"
+                    i === index
+                      ? "w-6 bg-primary"
+                      : "w-1.5 bg-primary/25 hover:bg-primary/50",
                   )}
                 />
               ))}

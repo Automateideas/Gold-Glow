@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   Sparkles,
-  Star,
   Quote,
   Droplets,
   Sun,
@@ -37,7 +36,9 @@ export default async function HomePage() {
   const newIn = all.filter((p) => p.new || p.rating >= 4.7).slice(0, 8);
   // Hero carousel: products flagged "Home carousel" in the admin (falls back to bestsellers).
   const flagged = all.filter((p) => p.hero);
-  const heroProducts = (flagged.length ? flagged : bestsellers.length ? bestsellers : all).slice(0, 6);
+  const heroProducts = (
+    flagged.length ? flagged : bestsellers.length ? bestsellers : all
+  ).slice(0, 6);
 
   // Brand + website structured data (helps Google show the brand name and logo).
   const orgLd = {
@@ -51,7 +52,11 @@ export default async function HomePage() {
         logo: absoluteUrl("/products/logo-wordmark.jpg"),
         email: settings.email || undefined,
         telephone: settings.phone || undefined,
-        sameAs: [settings.instagram, settings.facebook, settings.youtube].filter(Boolean),
+        sameAs: [
+          settings.instagram,
+          settings.facebook,
+          settings.youtube,
+        ].filter(Boolean),
       },
       {
         "@type": "WebSite",
@@ -67,7 +72,9 @@ export default async function HomePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).split("<").join("\\u003c") }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(orgLd).split("<").join("\\u003c"),
+        }}
       />
       {/* HERO */}
       <section className="relative overflow-hidden">
@@ -208,7 +215,7 @@ export default async function HomePage() {
       {/* FEATURE BANNER (editable in Admin → Settings) */}
       {settings.bannerEnabled && (
         <section className="container py-16">
-          <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-secondary via-background to-accent">
+          <div className="relative overflow-hidden rounded-3xl border bg-linear-to-br from-secondary via-background to-accent">
             <div className="grid items-center gap-6 lg:grid-cols-2">
               <div className="p-8 sm:p-12">
                 {settings.bannerBadge && (
@@ -241,13 +248,14 @@ export default async function HomePage() {
                 {settings.bannerButtonLabel && settings.bannerButtonLink && (
                   <Button className="mt-8" asChild>
                     <Link href={settings.bannerButtonLink}>
-                      {settings.bannerButtonLabel} <ArrowRight className="h-4 w-4" />
+                      {settings.bannerButtonLabel}{" "}
+                      <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
                 )}
               </div>
               {settings.bannerImage && (
-                <div className="relative h-64 lg:h-full lg:min-h-[380px]">
+                <div className="relative h-64 lg:h-full lg:min-h-95">
                   <Image
                     src={settings.bannerImage}
                     alt={settings.bannerTitle}
@@ -318,35 +326,35 @@ export default async function HomePage() {
 
       {/* REVIEWS */}
       {reviews.length > 0 && (
-      <section className="container py-8" id="reviews">
-        <SectionHeading
-          center
-          eyebrow="Glow stories"
-          title="What our community says"
-        />
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {reviews.map((r) => (
-            <div
-              key={r.id}
-              className="flex flex-col rounded-2xl border bg-card p-6 shadow-sm"
-            >
-              <Quote className="h-7 w-7 text-primary/30" />
-              <StarRating rating={r.rating} className="mt-3" />
-              <p className="mt-3 flex-1 text-sm text-foreground/90">
-                &ldquo;{r.text}&rdquo;
-              </p>
-              <div className="mt-5 border-t pt-4">
-                <p className="text-sm font-semibold">{r.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {[r.city, r.product && `verified buyer of ${r.product}`]
-                    .filter(Boolean)
-                    .join(" · ")}
+        <section className="container py-8" id="reviews">
+          <SectionHeading
+            center
+            eyebrow="Glow stories"
+            title="What our community says"
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {reviews.map((r) => (
+              <div
+                key={r.id}
+                className="flex flex-col rounded-2xl border bg-card p-6 shadow-sm"
+              >
+                <Quote className="h-7 w-7 text-primary/30" />
+                <StarRating rating={r.rating} className="mt-3" />
+                <p className="mt-3 flex-1 text-sm text-foreground/90">
+                  &ldquo;{r.text}&rdquo;
                 </p>
+                <div className="mt-5 border-t pt-4">
+                  <p className="text-sm font-semibold">{r.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {[r.city, r.product && `verified buyer of ${r.product}`]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
       )}
     </>
   );
