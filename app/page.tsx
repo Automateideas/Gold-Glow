@@ -19,7 +19,8 @@ import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { StarRating } from "@/components/star-rating";
-import { HeroCarousel } from "@/components/hero-carousel";
+import { HeroStage } from "@/components/hero-stage";
+import { HomeMotion } from "@/components/home-motion";
 import { absoluteUrl, SITE_URL } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
@@ -69,84 +70,78 @@ export default async function HomePage() {
   };
 
   return (
-    <>
+    <div data-motion-scope>
+      <HomeMotion />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(orgLd).split("<").join("\\u003c"),
         }}
       />
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-gold/20 blur-3xl" />
-        <div className="container grid items-center gap-10 py-14 lg:grid-cols-2 lg:py-20">
-          <div className="animate-fade-up">
-            <Badge variant="soft" className="mb-5 gap-1.5 px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5" /> {settings.heroBadge}
-            </Badge>
-            <h1 className="font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              {settings.heroLine1}{" "}
-              <span className="gold-text">{settings.heroGold}</span>{" "}
-              <span className="text-primary">{settings.heroAccent}</span>
-            </h1>
-            <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
-              {settings.heroDescription}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button size="lg" asChild>
-                <Link href="/shop">
-                  Shop the collection <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/shop/face-wash">Explore face care</Link>
-              </Button>
-            </div>
-            <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-              <span>Available on</span>
-              <span className="font-semibold text-foreground">Amazon</span>
-              <span className="text-border">·</span>
-              <span className="font-semibold text-foreground">Flipkart</span>
-              <span className="text-border">·</span>
-              <span className="font-semibold text-foreground">Meesho</span>
-            </p>
-            <div className="mt-8 flex items-center gap-4">
-              <div className="flex -space-x-3">
-                {heroProducts.slice(0, 4).map((p) => (
-                  <div
-                    key={p.id}
-                    className="h-11 w-11 overflow-hidden rounded-full border-2 border-background bg-secondary"
-                  >
-                    <Image
-                      src={p.images[0]}
-                      loading="eager"
-                      alt=""
-                      width={44}
-                      height={44}
-                      className="h-full w-full object-contain p-0.5"
-                    />
-                  </div>
-                ))}
-              </div>
-              {settings.showRating && (
-                <div>
-                  <StarRating rating={5} />
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">
-                      {settings.ratingScore}
-                    </span>{" "}
-                    {settings.ratingText}
-                  </p>
-                </div>
-              )}
-            </div>
+      {/* HERO — "Liquid Glow": the product floats in a liquid drop and its colour floods the hero (HeroStage) */}
+      <HeroStage products={heroProducts}>
+        <div data-ripple>
+          <Badge variant="soft" className="mb-5 gap-1.5 px-3 py-1.5">
+            <Sparkles className="h-3.5 w-3.5" /> {settings.heroBadge}
+          </Badge>
+          <h1 className="font-serif text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+            {settings.heroLine1}{" "}
+            <span className="gold-text">{settings.heroGold}</span>{" "}
+            <span className="text-primary">{settings.heroAccent}</span>
+          </h1>
+          <p className="mt-5 max-w-md text-base text-muted-foreground sm:text-lg">
+            {settings.heroDescription}
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Button size="lg" asChild>
+              <Link href="/shop">
+                Shop the collection <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/shop/face-wash">Explore face care</Link>
+            </Button>
           </div>
-
-          {/* Hero visual — product carousel (managed from /admin) */}
-          <HeroCarousel products={heroProducts} />
+          <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span>Available on</span>
+            <span className="font-semibold text-foreground">Amazon</span>
+            <span className="text-border">·</span>
+            <span className="font-semibold text-foreground">Flipkart</span>
+            <span className="text-border">·</span>
+            <span className="font-semibold text-foreground">Meesho</span>
+          </p>
+          <div className="mt-8 flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {heroProducts.slice(0, 4).map((p) => (
+                <div
+                  key={p.id}
+                  className="h-11 w-11 overflow-hidden rounded-full border-2 border-background bg-secondary"
+                >
+                  <Image
+                    src={p.images[0]}
+                    loading="eager"
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-contain p-0.5"
+                  />
+                </div>
+              ))}
+            </div>
+            {settings.showRating && (
+              <div>
+                <StarRating rating={5} />
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">
+                    {settings.ratingScore}
+                  </span>{" "}
+                  {settings.ratingText}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </section>
+      </HeroStage>
 
       <MarqueeStrip />
 
@@ -158,7 +153,7 @@ export default async function HomePage() {
           title="Find your daily ritual"
           description="From brightening cleansers to cooling talc, every Gold & Glow essential is made to fit effortlessly into your routine."
         />
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div data-reveal-stagger className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
@@ -205,7 +200,7 @@ export default async function HomePage() {
             </Link>
           </Button>
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+        <div data-reveal-stagger className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
           {bestsellers.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -217,7 +212,7 @@ export default async function HomePage() {
         <section className="container py-16">
           <div className="relative overflow-hidden rounded-3xl border bg-linear-to-br from-secondary via-background to-accent">
             <div className="grid items-center gap-6 lg:grid-cols-2">
-              <div className="p-8 sm:p-12">
+              <div data-reveal="left" className="p-8 sm:p-12">
                 {settings.bannerBadge && (
                   <Badge variant="gold" className="mb-4">
                     {settings.bannerBadge}
@@ -255,7 +250,7 @@ export default async function HomePage() {
                 )}
               </div>
               {settings.bannerImage && (
-                <div className="relative h-64 lg:h-full lg:min-h-95">
+                <div data-reveal="right" className="relative h-64 lg:h-full lg:min-h-95">
                   <Image
                     src={settings.bannerImage}
                     alt={settings.bannerTitle}
@@ -279,12 +274,12 @@ export default async function HomePage() {
           title="New in & trending"
           description="Just-dropped launches and the pieces climbing our charts right now."
         />
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+        <div data-reveal-stagger className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
           {newIn.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
-        <div className="mt-10 text-center">
+        <div data-reveal className="mt-10 text-center">
           <Button size="lg" variant="outline" asChild>
             <Link href="/shop">
               Browse all products <ArrowRight className="h-4 w-4" />
@@ -295,7 +290,7 @@ export default async function HomePage() {
 
       {/* INGREDIENT PROMISE */}
       <section className="container py-16" id="promise">
-        <div className="grid gap-8 rounded-3xl border bg-card p-8 shadow-sm sm:p-12 lg:grid-cols-3">
+        <div data-reveal-stagger className="grid gap-8 rounded-3xl border bg-card p-8 shadow-sm sm:p-12 lg:grid-cols-3">
           {[
             {
               icon: Droplets,
@@ -332,7 +327,7 @@ export default async function HomePage() {
             eyebrow="Glow stories"
             title="What our community says"
           />
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div data-reveal-stagger className="mt-10 grid gap-5 md:grid-cols-3">
             {reviews.map((r) => (
               <div
                 key={r.id}
@@ -356,6 +351,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-    </>
+    </div>
   );
 }

@@ -14,7 +14,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn(center && "text-center mx-auto", "max-w-2xl", className)}>
+    <div data-reveal className={cn(center && "text-center mx-auto", "max-w-2xl", className)}>
       {eyebrow && (
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
           {eyebrow}

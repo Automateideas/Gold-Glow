@@ -121,3 +121,78 @@
   width: max-content;
   animation: marquee 28s linear infinite;
 }
+
+/* ------------------------------------------------------------------ */
+/* Home page motion, "Liquid Glow" (see components/home-motion.tsx).   */
+/* Elements are only hidden when JS has flagged the page "motion", so  */
+/* without JavaScript or with reduced motion everything stays visible. */
+/* ------------------------------------------------------------------ */
+
+/* Intro: hero text is uncovered by a circle that spreads from the product drop. */
+html.motion [data-motion-scope] [data-ripple] {
+  --r: 0;
+  clip-path: circle(calc(var(--r) * 1%) at var(--ox, 100%) var(--oy, 50%));
+}
+html.motion [data-motion-scope] [data-ripple-source] {
+  opacity: 0;
+}
+
+/* Headings and blocks: a feathered sweep of light (soft edge, not a hard wipe). */
+html.motion [data-motion-scope] [data-reveal] {
+  --p: 0;
+  -webkit-mask-image: linear-gradient(var(--dir, 90deg), #000 calc(var(--p) * 1% - 16%), transparent calc(var(--p) * 1%));
+  mask-image: linear-gradient(var(--dir, 90deg), #000 calc(var(--p) * 1% - 16%), transparent calc(var(--p) * 1%));
+}
+html.motion [data-motion-scope] [data-reveal="right"] {
+  --dir: 270deg;
+}
+
+/* Grids: each card fills up from the bottom, like liquid filling a bottle. */
+html.motion [data-motion-scope] [data-reveal-stagger] > * {
+  --fill: 100;
+  clip-path: inset(calc(var(--fill) * 1%) 0 0 0 round 22px);
+}
+
+/* A soft gold light that follows the mouse (desktop only). */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  width: 460px;
+  height: 460px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  background: radial-gradient(circle, hsl(var(--gold) / 0.24), hsl(var(--primary) / 0.07) 45%, transparent 68%);
+  will-change: transform;
+}
+
+/* ...and it lights up whichever card it is over. */
+[data-glow] {
+  position: relative;
+}
+[data-glow]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--gold) / 0.42), hsl(var(--primary) / 0.12) 48%, transparent 72%);
+}
+[data-glow]:hover::after {
+  opacity: 1;
+}
+
+/* The halo colour behind the hero product fades when the product changes. */
+svg stop {
+  transition: stop-color 0.9s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-glow {
+    display: none;
+  }
+}

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/site-chrome";
@@ -32,7 +33,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(SITE_URL),
     applicationName: "Gold & Glow",
-    appleWebApp: { capable: true, title: "Gold & Glow", statusBarStyle: "default" },
+    appleWebApp: {
+      capable: true,
+      title: "Gold & Glow",
+      statusBarStyle: "default",
+    },
     formatDetection: { telephone: false },
     title: { default: s.seoTitle, template: "%s · Gold & Glow" },
     description: s.seoDescription,
@@ -54,7 +59,11 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "en_IN",
       images: [{ url: "/products/logo-wordmark.jpg", alt: "Gold & Glow" }],
     },
-    twitter: { card: "summary_large_image", title: s.seoTitle, description: s.seoDescription },
+    twitter: {
+      card: "summary_large_image",
+      title: s.seoTitle,
+      description: s.seoDescription,
+    },
   };
 }
 
@@ -66,13 +75,32 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSettings();
+  // Nonce from proxy.ts so this tiny inline script is allowed by the CSP in production.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
       className={`${poppins.variable} ${playfair.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen font-sans" suppressHydrationWarning>
+      <head>
+        {/* Marks the page as "motion-enabled" before first paint so animated elements never flash.
+            Skipped for reduced-motion users; removed after 4s if the animation code never started.
+            A real inline script on purpose: next/script's beforeInteractive only runs after
+            hydration starts, which is too late to prevent the flash. */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var d=document.documentElement;if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('motion');setTimeout(function(){if(!d.dataset.motionReady)d.classList.remove('motion')},4000)}catch(e){}})()",
+          }}
+        />
+      </head>
+      <body
+        className="min-h-screen font-sans"
+        suppressHydrationWarning
+        data-temp-mail-org="0"
+      >
         <SiteChrome settings={settings}>{children}</SiteChrome>
         <PwaRegister />
         <Toaster

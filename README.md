@@ -165,6 +165,25 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
 - **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
   Share → Add to Home Screen.
 
+## ✨ "Liquid Glow" home page (Anime.js)
+
+The home page uses [Anime.js](https://animejs.com) v4 for a look built around the brand's *glow*, not generic fade-ups:
+
+- **Liquid drop hero** ([`components/hero-stage.tsx`](components/hero-stage.tsx), [`hero-carousel.tsx`](components/hero-carousel.tsx), [`lib/blob.ts`](lib/blob.ts)):
+  each product sits in a slowly morphing organic drop with a halo in the product's own accent colour
+  (the "Accent colour" field in Admin → Products). When the product changes, that colour floods the whole hero
+  from the drop outwards, so rose water turns the page pink, aloe green, honey gold.
+- **Intro ripple:** the hero text is uncovered by a circle spreading out of the drop.
+- **Light sweep:** section headings are revealed by a soft, feathered sweep of light.
+- **Liquid fill:** card grids fill up from the bottom like liquid filling a bottle.
+- **Cursor glow:** on desktop a soft gold light follows the mouse and lights up the card under it.
+
+All of it only decorates server-rendered HTML (the content is in the page source for SEO) and lives in
+[`components/home-motion.tsx`](components/home-motion.tsx). Nothing is hidden unless JavaScript flags the page
+(`motion` class on `<html>`, set by a tiny nonce'd script in `app/layout.tsx`). Visitors who prefer reduced motion
+get a static page (the drop keeps its shape but doesn't move), and if the animation code never starts the class
+is removed after 4 s. To animate another block on the home page, add `data-reveal` (or `data-reveal-stagger` on a grid).
+
 ## 🔒 Security & code quality
 
 - **Security headers** on every response (`next.config.mjs`): nosniff, X-Frame-Options DENY,
