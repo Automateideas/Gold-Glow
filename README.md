@@ -119,11 +119,13 @@ wrong attempts from one IP lock login for 15 minutes.
 | Tab | What you can do |
 | --- | --- |
 | **Products** | Add, edit, delete, duplicate, search/filter; hide a product without deleting it; "Home carousel", Bestseller and New switches; image upload (auto-resized to WebP) |
+| **Categories** | Heading, intro text, tips and Google title/description of each category page (`/shop/face-wash` …) |
 | **Reviews** | The customer stories on the homepage (until you add your own, 3 built-in samples show) |
+| **Pages** | Privacy Policy, Terms of Use, Return & Refund and Payment policy: edit sections, bold/bullets/links, auto "Last updated" |
 | **Messages** | Everything sent through the Contact form, with unread count and one-click reply |
 | **Subscribers** | Footer newsletter signups, with CSV download |
 | **Analytics** | Clicks on the Buy-on-Amazon/Flipkart/Meesho buttons per product and marketplace (7/30/90 days) |
-| **Settings** | Announcement bar, homepage heading and text, feature banner (with image), contact details, social links, Google title/description |
+| **Settings** | Announcement bar, homepage heading and text, feature banner (with image), contact details (email, phone, address, hours), social links (Instagram, Facebook, YouTube, WhatsApp), Google title/description |
 
 **One-time activation:**
 
@@ -147,6 +149,21 @@ wrong attempts from one IP lock login for 15 minutes.
 Other commands: `npm run db:generate` (after editing `db/schema.ts`, then `db:migrate` again; SQL lives in `drizzle/`),
 `npm run db:studio`. On Hostinger, set the same variables as environment variables for the
 Node.js app instead of a file.
+
+## 📱 Installable app (PWA)
+
+The site can be installed on a phone or computer like an app (Add to Home Screen / Install app).
+
+- **Manifest:** [`app/manifest.ts`](app/manifest.ts): name, brand colour, icons and Shop/Contact shortcuts.
+- **Icons:** white "G" on brand pink, generated from the logo by `node scripts/generate-icons.mjs`
+  (writes `public/icons/*`, `app/icon.png`, `app/apple-icon.png`). Re-run it if the logo changes.
+- **Service worker:** [`public/sw.js`](public/sw.js). Pages are network-first (so admin edits show
+  immediately) and fall back to the last visited copy, then to [`public/offline.html`](public/offline.html).
+  Hashed build files are cache-first, images stale-while-revalidate. It never touches `/admin`, `/api`
+  or form submissions. Change `VERSION` in `sw.js` to force everyone onto fresh caches.
+- It only registers in **production** (`npm run build && npm run start`), over HTTPS or localhost.
+- **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
+  Share → Add to Home Screen.
 
 ## 🛠 Tech
 

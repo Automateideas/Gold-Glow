@@ -22,6 +22,8 @@ import {
   type GgProductInsert,
 } from "@/db/schema";
 import { DEFAULT_REVIEWS, mergeSettings } from "@/lib/settings";
+import { CATEGORY_PAGES, type CategoryOverride } from "@/lib/categories";
+import { POLICY_PAGES, type PolicyOverride } from "@/lib/pages";
 import { friendlyDbError } from "@/lib/catalog";
 import { productToRow } from "@/lib/catalog-map";
 import { CATEGORIES, products as seedProducts } from "@/lib/products";
@@ -401,3 +403,124 @@ export async function deleteSubscriberAction(email: string): Promise<ActionResul
   }
 }
 
+
+/* ---------------------------- categories ---------------------------- */
+
+async function readCategoryOverrides(): Promise<Record<string, CategoryOverride>> {
+  const rows = await getDb().select().from(ggSettings).where(eq(ggSettings.key, "categories")).limit(1);
+  const d = rows[0]?.data;
+  return d && typeof d === "object" ? (d as Record<string, CategoryOverride>) : {};
+}
+
+async function writeCategoryOverrides(all: Record<string, CategoryOverride>) {
+  await getDb()
+    .insert(ggSettings)
+    .values({ key: "categories", data: all })
+    .onConflictDoUpdate({ target: ggSettings.key, set: { data: all, updated_at: new Date() } });
+}
+
+export async function saveCategoryAction(payload: { slug: string; data: unknown }): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  const slug = String(payload.slug);
+  if (!CATEGORY_PAGES.some((c) => c.slug === slug)) return { ok: false, error: "Unknown category." };
+
+  const d = (payload.data ?? {}) as Record<string, unknown>;
+  const h1 = str(d.h1, 120);
+  const metaTitle = str(d.metaTitle, 90);
+  const metaDescription = str(d.metaDescription, 220);
+  const intro = list(d.intro, 5).map((x) => x.slice(0, 1500));
+  const tips = list(d.tips, 8).map((x) => x.slice(0, 300));
+  if (!h1 || !metaTitle || !metaDescription) {
+    return { ok: false, error: "Heading, Google title and Google description can't be empty." };
+  }
+  if (intro.length === 0) return { ok: false, error: "Add at least one intro paragraph." };
+
+  try {
+    const all = await readCategoryOverrides();
+    all[slug] = { h1, metaTitle, metaDescription, intro, tips };
+    await writeCategoryOverrides(all);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function resetCategoryAction(slug: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    const all = await readCategoryOverrides();
+    delete all[String(slug)];
+    await writeCategoryOverrides(all);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+/* ------------------------- policy pages ------------------------- */
+
+async function readPolicyOverrides(): Promise<Record<string, PolicyOverride>> {
+  const rows = await getDb().select().from(ggSettings).where(eq(ggSettings.key, "pages")).limit(1);
+  const d = rows[0]?.data;
+  return d && typeof d === "object" ? (d as Record<string, PolicyOverride>) : {};
+}
+
+async function writePolicyOverrides(all: Record<string, PolicyOverride>) {
+  await getDb()
+    .insert(ggSettings)
+    .values({ key: "pages", data: all })
+    .onConflictDoUpdate({ target: ggSettings.key, set: { data: all, updated_at: new Date() } });
+}
+
+export async function savePolicyAction(payload: { slug: string; data: unknown }): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  const slug = String(payload.slug);
+  if (!POLICY_PAGES.some((p) => p.slug === slug)) return { ok: false, error: "Unknown page." };
+
+  const d = (payload.data ?? {}) as Record<string, unknown>;
+  const title = str(d.title, 120);
+  const metaDescription = str(d.metaDescription, 220);
+  const intro = typeof d.intro === "string" ? d.intro.trim().slice(0, 3000) : "";
+  if (!title || !metaDescription) return { ok: false, error: "Title and Google description can't be empty." };
+
+  const rawSections = Array.isArray(d.sections) ? d.sections : [];
+  const sections = rawSections
+    .map((s) => {
+      const o = (s ?? {}) as Record<string, unknown>;
+      return {
+        heading: str(o.heading, 160),
+        body: (typeof o.body === "string" ? o.body : "").trim().slice(0, 12000),
+      };
+    })
+    .filter((s) => s.heading)
+    .slice(0, 30);
+  if (sections.length === 0) return { ok: false, error: "Add at least one section with a heading." };
+
+  // "Last updated" is set automatically (Indian date).
+  const updated = new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  try {
+    const all = await readPolicyOverrides();
+    all[slug] = { title, metaDescription, intro, sections, updated };
+    await writePolicyOverrides(all);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}
+
+export async function resetPolicyAction(slug: string): Promise<ActionResult> {
+  const denied = await guard();
+  if (denied) return { ok: false, error: denied };
+  try {
+    const all = await readPolicyOverrides();
+    delete all[String(slug)];
+    await writePolicyOverrides(all);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: friendlyDbError(e) };
+  }
+}

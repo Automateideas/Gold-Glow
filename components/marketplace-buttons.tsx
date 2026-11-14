@@ -44,6 +44,10 @@ export function MarketplaceButtons({
               <img
                 src={m.logo}
                 alt={`${m.name} logo`}
+                width={28}
+                height={28}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-contain"
               />
             </span>
@@ -83,6 +87,10 @@ export function MarketplaceChips({
           <img
             src={m.logo}
             alt={m.name}
+            width={24}
+            height={24}
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-contain"
           />
         </a>

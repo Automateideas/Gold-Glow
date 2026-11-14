@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#d61570" />
+    <title>You're offline · Gold &amp; Glow</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: #2b1a23;
+        background: linear-gradient(160deg, #fffcfa 0%, #fdeaf3 100%);
+        text-align: center;
+      }
+      main { max-width: 380px; }
+      .logo {
+        width: 88px; height: 88px; border-radius: 22px; margin: 0 auto 20px;
+        box-shadow: 0 10px 30px rgba(214, 21, 112, 0.25);
+      }
+      h1 { margin: 0 0 8px; font-size: 1.6rem; }
+      p { margin: 0 0 22px; color: #6b5560; line-height: 1.5; }
+      button, a.btn {
+        display: inline-block; cursor: pointer; border: 0; text-decoration: none;
+        padding: 12px 26px; border-radius: 999px; font-size: 1rem; font-weight: 600;
+        color: #fff; background: #d61570;
+      }
+      button:active { transform: scale(0.98); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img class="logo" src="/icons/icon-192.png" alt="Gold &amp; Glow" width="88" height="88" />
+      <h1>You're offline</h1>
+      <p>We can't reach the internet right now. Check your connection, then try again. Pages you visited before may still open.</p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>

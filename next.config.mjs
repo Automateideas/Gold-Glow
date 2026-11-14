@@ -14,6 +14,24 @@ const supabaseHost = (() => {
 const nextConfig = {
   // Lets a second dev server run side-by-side without sharing the .next folder.
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  async headers() {
+    return [
+      {
+        // A service worker must never be cached, or updates would never reach visitors.
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+      {
+        source: "/offline.html",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
+      },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: supabaseHost

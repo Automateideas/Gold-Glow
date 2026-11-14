@@ -19,9 +19,9 @@ import {
 
 const NAV = [
   { label: "Shop All", href: "/shop" },
-  { label: "Face Care", href: "/shop?category=Face+Wash" },
-  { label: "Body Care", href: "/shop?category=Body+Lotion" },
-  { label: "Talc", href: "/shop?category=Talc+%26+Powder" },
+  { label: "Face Care", href: "/shop/face-wash" },
+  { label: "Body Care", href: "/shop/body-lotion" },
+  { label: "Talc", href: "/shop/talc-powder" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

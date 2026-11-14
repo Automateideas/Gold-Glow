@@ -1,9 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/site-chrome";
+import { PwaRegister } from "@/components/pwa-register";
 import { Toaster } from "sonner";
 import { getSettings } from "@/lib/site-data";
+import { SITE_URL } from "@/lib/site-url";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -19,12 +21,19 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://goldandglow.in";
+export const viewport: Viewport = {
+  themeColor: "#d61570",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
   return {
     metadataBase: new URL(SITE_URL),
+    applicationName: "Gold & Glow",
+    appleWebApp: { capable: true, title: "Gold & Glow", statusBarStyle: "default" },
+    formatDetection: { telephone: false },
     title: { default: s.seoTitle, template: "%s · Gold & Glow" },
     description: s.seoDescription,
     keywords: [
@@ -42,7 +51,10 @@ export async function generateMetadata(): Promise<Metadata> {
       description: s.seoDescription,
       type: "website",
       siteName: "Gold & Glow",
+      locale: "en_IN",
+      images: [{ url: "/products/logo-wordmark.jpg", alt: "Gold & Glow" }],
     },
+    twitter: { card: "summary_large_image", title: s.seoTitle, description: s.seoDescription },
   };
 }
 
@@ -60,6 +72,7 @@ export default async function RootLayout({
     >
       <body className="min-h-screen font-sans" suppressHydrationWarning>
         <SiteChrome settings={settings}>{children}</SiteChrome>
+        <PwaRegister />
         <Toaster
           position="bottom-right"
           richColors

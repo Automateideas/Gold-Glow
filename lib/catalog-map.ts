@@ -20,6 +20,7 @@ export type ProductRow = {
   is_new: boolean | null;
   in_hero: boolean | null;
   published: boolean | null;
+  updated_at?: Date | string | null;
   images: string[] | null;
   shade: string | null;
   short: string | null;
@@ -48,6 +49,7 @@ export function rowToProduct(r: ProductRow): Product {
     new: r.is_new ?? false,
     hero: r.in_hero ?? false,
     published: r.published ?? true,
+    updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : undefined,
     images: r.images && r.images.length ? r.images : ["/products/logo-wordmark.jpg"],
     shade: r.shade ?? "335 82% 46%",
     short: r.short ?? "",

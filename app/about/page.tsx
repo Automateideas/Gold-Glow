@@ -8,7 +8,8 @@ import { SectionHeading } from "@/components/section-heading";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "The story behind Gold & Glow — herbal-inspired cosmetics crafted for precise care and a poetic, golden glow.",
+    "The story behind Gold & Glow: herbal-inspired face, body and talc care with clean formulas, made for precise care and a poetic, golden glow.",
+  alternates: { canonical: "/about" },
 };
 
 const values = [

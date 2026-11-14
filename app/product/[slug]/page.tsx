@@ -7,6 +7,8 @@ import { ProductDetail } from "@/components/product-detail";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { BRAND } from "@/lib/products";
+import { absoluteUrl } from "@/lib/site-url";
+import { categoryHref } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +20,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
+  const base = (product.short || product.description).split(/\s+/).join(" ").trim();
+  const description = `${base} ${product.category}, ${product.size}. Buy Gold & Glow on Amazon, Flipkart or Meesho.`.slice(0, 160);
   return {
     title: product.name,
-    description: product.short,
+    description,
+    alternates: { canonical: `/product/${product.slug}` },
     openGraph: {
       title: `${product.name} · Gold & Glow`,
-      description: product.short,
+      description,
       images: [product.images[0]],
     },
   };
@@ -45,16 +50,37 @@ export default async function ProductPage({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
+    url: absoluteUrl(`/product/${product.slug}`),
     name: product.name,
     description: product.short || product.description,
-    image: product.images,
+    image: product.images.map(absoluteUrl),
     sku: product.id,
     category: product.category,
     brand: { "@type": "Brand", name: BRAND.name },
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Shop", item: absoluteUrl("/shop") },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.category,
+        item: absoluteUrl(categoryHref(product.category)),
+      },
+      { "@type": "ListItem", position: 4, name: product.name },
+    ],
+  };
+
   return (
     <div className="container py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd).split("<").join("\\u003c") }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
@@ -66,7 +92,7 @@ export default async function ProductPage({
         <Link href="/shop" className="hover:text-primary">Shop</Link>
         <ChevronRight className="h-3.5 w-3.5" />
         <Link
-          href={`/shop?category=${encodeURIComponent(product.category)}`}
+          href={categoryHref(product.category)}
           className="hover:text-primary"
         >
           {product.category}

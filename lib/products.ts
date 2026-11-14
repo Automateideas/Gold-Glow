@@ -24,6 +24,8 @@ export type Product = {
   hero?: boolean;
   /** false = hidden from the storefront (draft). Defaults to true. */
   published?: boolean;
+  /** ISO date of the last edit (from the database). */
+  updatedAt?: string;
   new?: boolean;
   images: string[];
   shade: string; // accent color used in UI cards (hsl)

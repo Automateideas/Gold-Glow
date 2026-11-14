@@ -171,7 +171,7 @@ export function AdminSettings({ initial }: { initial: SiteSettings }) {
                   onChange={(e) => set("bannerButtonLabel", e.target.value)}
                 />
               </Field>
-              <Field label="Button link" hint="/shop?category=… or https://…">
+              <Field label="Button link" hint="/shop/talc-powder or https://…">
                 <Input
                   value={s.bannerButtonLink}
                   onChange={(e) => set("bannerButtonLink", e.target.value)}
@@ -223,6 +223,14 @@ export function AdminSettings({ initial }: { initial: SiteSettings }) {
                 />
               </Field>
             </div>
+            <Field label="WhatsApp number" hint="with country code, digits only, e.g. 919810000000. Empty = hidden">
+              <Input
+                value={s.whatsapp}
+                onChange={(e) => set("whatsapp", e.target.value)}
+                placeholder="919810000000"
+                inputMode="numeric"
+              />
+            </Field>
           </div>
         )}
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,6 +11,7 @@ import {
   Wind,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/products";
+import { categoryHref } from "@/lib/categories";
 import { getAllProducts } from "@/lib/catalog";
 import { getPublishedReviews, getSettings } from "@/lib/site-data";
 import { Button } from "@/components/ui/button";
@@ -19,8 +21,11 @@ import { SectionHeading } from "@/components/section-heading";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { StarRating } from "@/components/star-rating";
 import { HeroCarousel } from "@/components/hero-carousel";
+import { absoluteUrl, SITE_URL } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function HomePage() {
   const [all, settings, reviews] = await Promise.all([
@@ -34,8 +39,36 @@ export default async function HomePage() {
   const flagged = all.filter((p) => p.hero);
   const heroProducts = (flagged.length ? flagged : bestsellers.length ? bestsellers : all).slice(0, 6);
 
+  // Brand + website structured data (helps Google show the brand name and logo).
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Gold & Glow",
+        url: SITE_URL,
+        logo: absoluteUrl("/products/logo-wordmark.jpg"),
+        email: settings.email || undefined,
+        telephone: settings.phone || undefined,
+        sameAs: [settings.instagram, settings.facebook, settings.youtube].filter(Boolean),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: "Gold & Glow",
+        url: SITE_URL,
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd).split("<").join("\\u003c") }}
+      />
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
@@ -60,7 +93,7 @@ export default async function HomePage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/shop?category=Face+Wash">Explore face care</Link>
+                <Link href="/shop/face-wash">Explore face care</Link>
               </Button>
             </div>
             <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
@@ -122,7 +155,7 @@ export default async function HomePage() {
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
-              href={`/shop?category=${encodeURIComponent(cat.name)}`}
+              href={categoryHref(cat.name)}
               className="group flex flex-col items-center gap-3 rounded-2xl border bg-card p-4 text-center shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
             >
               <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-secondary/40">

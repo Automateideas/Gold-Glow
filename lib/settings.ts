@@ -40,6 +40,7 @@ export type SiteSettings = {
   instagram: string;
   facebook: string;
   youtube: string;
+  whatsapp: string; // number with country code, e.g. 919810000000
 
   // SEO
   seoTitle: string;
@@ -68,7 +69,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
     "Our Blossom talc range cools on contact and keeps you feeling confident — with rose, fresh floral and long-lasting deo freshness.",
   bannerFeatures: ["Icy cooling", "All-day dry", "Floral scent"],
   bannerButtonLabel: "Shop talc range",
-  bannerButtonLink: "/shop?category=Talc+%26+Powder",
+  bannerButtonLink: "/shop/talc-powder",
   bannerImage: "/products/talc-trio-banner.jpg",
 
   email: BRAND.supportEmail,
@@ -79,10 +80,11 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   instagram: "",
   facebook: "",
   youtube: "",
+  whatsapp: "",
 
-  seoTitle: "Gold & Glow — Precised Care, Poetic Glow",
+  seoTitle: "Herbal Face Wash, Body Lotion & Talc | Gold & Glow",
   seoDescription:
-    "Gold & Glow herbal cosmetics — vitamin-C face wash, aloe & honey lotions, icy-touch talc, rose water and more. Precised care, poetic glow.",
+    "Gold & Glow herbal skincare: vitamin-C face wash, aloe and honey body lotions, creams, icy-touch talc and rose water. Buy on Amazon, Flipkart or Meesho.",
 };
 
 /** Merge saved values over the defaults, ignoring anything of the wrong type. */

@@ -156,11 +156,11 @@ export function ProductDetail({ product }: { product: Product }) {
         <Accordion type="single" collapsible className="mt-6" defaultValue="desc">
           <AccordionItem value="desc">
             <AccordionTrigger>Description</AccordionTrigger>
-            <AccordionContent>{product.description}</AccordionContent>
+            <AccordionContent forceMount>{product.description}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="ingredients">
             <AccordionTrigger>Key ingredients</AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent forceMount>
               <div className="flex flex-wrap gap-2">
                 {product.keyIngredients.map((i) => (
                   <span
@@ -175,11 +175,11 @@ export function ProductDetail({ product }: { product: Product }) {
           </AccordionItem>
           <AccordionItem value="how">
             <AccordionTrigger>How to use</AccordionTrigger>
-            <AccordionContent>{product.howToUse}</AccordionContent>
+            <AccordionContent forceMount>{product.howToUse}</AccordionContent>
           </AccordionItem>
           <AccordionItem value="suit">
             <AccordionTrigger>Suitable for</AccordionTrigger>
-            <AccordionContent>{product.skinType}</AccordionContent>
+            <AccordionContent forceMount>{product.skinType}</AccordionContent>
           </AccordionItem>
         </Accordion>
       </div>

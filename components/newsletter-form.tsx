@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { subscribeAction } from "@/app/actions";
 
 /** Footer "Join the Glow Club" form. Saves the email (Admin → Subscribers). */
@@ -26,6 +27,7 @@ export function NewsletterForm() {
   }
 
   return (
+    <div className="w-full">
     <form onSubmit={onSubmit} className="flex w-full flex-col gap-3 sm:flex-row">
       <Input
         type="email"
@@ -49,5 +51,13 @@ export function NewsletterForm() {
         {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe"}
       </Button>
     </form>
+    <p className="mt-2 text-xs text-primary-foreground/80">
+      We only email about launches and where to buy. Unsubscribe any time. See our{" "}
+      <Link href="/privacy" className="underline">
+        Privacy Policy
+      </Link>
+      .
+    </p>
+    </div>
   );
 }

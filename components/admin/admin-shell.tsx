@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   ExternalLink,
+  FileText,
   Inbox,
+  LayoutGrid,
   LogOut,
   Package,
   Settings,
@@ -21,7 +23,9 @@ import { logoutAction } from "@/app/admin/actions";
 
 const TABS = [
   { href: "/admin", label: "Products", icon: Package, exact: true },
+  { href: "/admin/categories", label: "Categories", icon: LayoutGrid },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/pages", label: "Pages", icon: FileText },
   { href: "/admin/messages", label: "Messages", icon: Inbox, badge: true },
   { href: "/admin/subscribers", label: "Subscribers", icon: Users },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },

@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 import { ShopClient } from "@/components/shop-client";
 import { getAllProducts } from "@/lib/catalog";
+import { CATEGORY_PAGES } from "@/lib/categories";
 
 export const metadata: Metadata = {
   title: "Shop All Products",
   description:
-    "Browse the full Gold & Glow collection — face wash, lotions, creams, talc, toners and aloe gel.",
+    "Shop the full Gold & Glow herbal range: face wash, body lotions, creams, talc, toners and aloe gel. Buy on Amazon, Flipkart or Meesho.",
+  alternates: { canonical: "/shop" },
 };
 
 export const dynamic = "force-dynamic";
@@ -16,6 +19,9 @@ export default async function ShopPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const sp = await searchParams;
+  // Old filter links (/shop?category=Face+Wash) now live at their own page.
+  const target = CATEGORY_PAGES.find((c) => c.name === sp.category);
+  if (target) permanentRedirect(`/shop/${target.slug}`);
   const allProducts = await getAllProducts();
   return (
     <div className="container py-10 sm:py-14">

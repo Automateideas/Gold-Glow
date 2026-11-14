@@ -10,6 +10,8 @@ import {
   ggSubscribers,
 } from "@/db/schema";
 import { friendlyDbError, withRetry } from "@/lib/catalog";
+import { CATEGORY_PAGES, mergeCategory, type CategoryOverride, type CategoryPage } from "@/lib/categories";
+import { POLICY_PAGES, mergePolicy, type PolicyOverride, type PolicyPage } from "@/lib/pages";
 import {
   DEFAULT_REVIEWS,
   DEFAULT_SETTINGS,
@@ -19,6 +21,8 @@ import {
 } from "@/lib/settings";
 
 export const SETTINGS_KEY = "site";
+export const CATEGORIES_KEY = "categories";
+export const POLICIES_KEY = "pages";
 
 /** Site content (texts, contact info, banner…). Falls back to the defaults. */
 export const getSettings = cache(async (): Promise<SiteSettings> => {
@@ -203,3 +207,51 @@ export const getAnalytics = (days = 30) =>
       daily: dailyRows,
     };
   });
+
+/** Saved category edits keyed by slug (raw, for the admin editor). */
+export const getCategoryOverrides = cache(async (): Promise<Record<string, CategoryOverride>> => {
+  if (!dbConfigured()) return {};
+  try {
+    const rows = await withRetry(() =>
+      getDb().select().from(ggSettings).where(eq(ggSettings.key, CATEGORIES_KEY)).limit(1)
+    );
+    const data = rows[0]?.data;
+    return data && typeof data === "object" ? (data as Record<string, CategoryOverride>) : {};
+  } catch {
+    return {};
+  }
+});
+
+/** Category pages with the client's edits applied over the built-in text. */
+export const getCategoryPages = cache(async (): Promise<CategoryPage[]> => {
+  const ov = await getCategoryOverrides();
+  return CATEGORY_PAGES.map((c) => mergeCategory(c, ov[c.slug]));
+});
+
+export async function getCategoryPage(slug: string): Promise<CategoryPage | undefined> {
+  return (await getCategoryPages()).find((c) => c.slug === slug);
+}
+
+/** Saved edits to the policy pages, keyed by slug (raw, for the admin editor). */
+export const getPolicyOverrides = cache(async (): Promise<Record<string, PolicyOverride>> => {
+  if (!dbConfigured()) return {};
+  try {
+    const rows = await withRetry(() =>
+      getDb().select().from(ggSettings).where(eq(ggSettings.key, POLICIES_KEY)).limit(1)
+    );
+    const data = rows[0]?.data;
+    return data && typeof data === "object" ? (data as Record<string, PolicyOverride>) : {};
+  } catch {
+    return {};
+  }
+});
+
+/** Policy pages with the client's edits applied over the built-in text. */
+export const getPolicyPages = cache(async (): Promise<PolicyPage[]> => {
+  const ov = await getPolicyOverrides();
+  return POLICY_PAGES.map((p) => mergePolicy(p, ov[p.slug]));
+});
+
+export async function getPolicyPage(slug: string): Promise<PolicyPage | undefined> {
+  return (await getPolicyPages()).find((p) => p.slug === slug);
+}

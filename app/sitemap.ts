@@ -1,22 +1,29 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts } from "@/lib/catalog";
+import { CATEGORY_PAGES } from "@/lib/categories";
+import { SITE_URL } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://goldandglow.in").replace(/\/+$/, "");
-
+/** Only real "last changed" dates are listed (products); static pages omit lastmod. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getAllProducts();
-  const now = new Date();
   return [
-    { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${SITE_URL}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${SITE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${SITE_URL}/contact`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: SITE_URL, priority: 1 },
+    { url: `${SITE_URL}/shop`, priority: 0.9 },
+    ...CATEGORY_PAGES.filter((c) => products.some((p) => p.category === c.name)).map((c) => ({
+      url: `${SITE_URL}/shop/${c.slug}`,
+      priority: 0.8,
+    })),
+    { url: `${SITE_URL}/about`, priority: 0.5 },
+    { url: `${SITE_URL}/contact`, priority: 0.5 },
+    { url: `${SITE_URL}/privacy`, priority: 0.3 },
+    { url: `${SITE_URL}/terms`, priority: 0.3 },
+    { url: `${SITE_URL}/refund-policy`, priority: 0.3 },
+    { url: `${SITE_URL}/payment-policy`, priority: 0.3 },
     ...products.map((p) => ({
       url: `${SITE_URL}/product/${p.slug}`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
+      lastModified: p.updatedAt ? new Date(p.updatedAt) : undefined,
       priority: 0.8,
     })),
   ];

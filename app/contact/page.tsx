@@ -10,7 +10,12 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Questions about Gold & Glow products, ingredients or where to buy? Send us a message or reach our care team by email or phone.",
+  alternates: { canonical: "/contact" },
+};
 export const dynamic = "force-dynamic";
 
 const faqs = [

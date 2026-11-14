@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Link from "next/link";
 import { submitContactAction } from "@/app/actions";
 
 /** Contact form. Messages are saved and show up in Admin → Messages. */
@@ -84,6 +85,13 @@ export function ContactForm() {
           )}
         </Button>
       </form>
+      <p className="mt-4 text-xs text-muted-foreground">
+        We use your details only to reply to you. See our{" "}
+        <Link href="/privacy" className="text-primary underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </Card>
   );
 }
