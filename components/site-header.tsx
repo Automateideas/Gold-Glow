@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { BoldText } from "@/components/bold-text";
+import { InstallApp } from "@/components/install-app";
 import type { SiteSettings } from "@/lib/settings";
 import {
   Sheet,
@@ -116,6 +117,7 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
           </nav>
 
           <div className="flex items-center gap-1">
+            <InstallApp variant="header" />
             <Button variant="ghost" size="icon" asChild aria-label="Search" className="hidden lg:inline-flex">
               <Link href="/shop">
                 <Search className="h-5 w-5" />

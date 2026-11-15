@@ -85,6 +85,15 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Chrome fires "beforeinstallprompt" only once, often before React hydrates. Keep the
+            event so the Install button / popup (components/install-app.tsx) can still use it. */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ggInstall=e})",
+          }}
+        />
         {/* Marks the page as "motion-enabled" before first paint so animated elements never flash.
             Only when the home-page animations switch is on (Admin → Settings). Skipped for
             reduced-motion users; removed after 4s if the animation code never started.

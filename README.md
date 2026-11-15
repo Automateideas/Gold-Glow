@@ -162,8 +162,16 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
   Hashed build files are cache-first, images stale-while-revalidate. It never touches `/admin`, `/api`
   or form submissions. Change `VERSION` in `sw.js` to force everyone onto fresh caches.
 - It only registers in **production** (`npm run build && npm run start`), over HTTPS or localhost.
-- **Install button:** shown in the footer when the browser offers installing; on iPhone it explains
-  Share → Add to Home Screen.
+- **Install button + popup:** an "Install" button in the header (and "Install app" in the footer) stays
+  visible until the site runs as an installed app. It opens the browser's install dialog when one is
+  available; otherwise it explains how to install from the browser menu (iPhone: Share → Add to Home
+  Screen). A small "Install Gold & Glow" card also pops up 1.5 s after the browser says the site is
+  installable (right away on iPhone); "Not now" hides it for 7 days
+  (`components/install-app.tsx`).
+- Chrome fires its install event only once, often before the page has hydrated, so a tiny head script in
+  `app/layout.tsx` keeps it (`window.__ggInstall`), and the service worker registers right after
+  hydration instead of waiting for the page `load` event. Both are what make the prompt arrive quickly.
+- Installability can only be tested in production over HTTPS (Vercel) — not in `npm run dev`.
 
 ## 📱 Mobile tab bar
 

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { InstallPrompt } from "@/components/install-app";
 import type { SiteSettings } from "@/lib/settings";
 
 /**
@@ -31,6 +32,7 @@ export function SiteChrome({
         <SiteFooter settings={settings} />
       </div>
       <MobileBottomNav />
+      <InstallPrompt />
     </>
   );
 }
