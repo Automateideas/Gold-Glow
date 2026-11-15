@@ -6,6 +6,7 @@ import { CATEGORIES, type Category, type Product } from "@/lib/products";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SEARCH_PROXY_ID, SHOP_SEARCH_ID, SHOP_SEARCH_PARAM } from "@/lib/shop-search";
 import { cn } from "@/lib/utils";
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "rating";
@@ -31,7 +32,16 @@ export function ShopClient({
 }) {
   const searchRef = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
-    if (focusSearch) searchRef.current?.focus();
+    if (!focusSearch) return;
+    searchRef.current?.focus();
+    // Take over from the tab bar's temporary input (it exists only to open the iOS keyboard)...
+    document.getElementById(SEARCH_PROXY_ID)?.remove();
+    // ...and drop "?search=1" so a reload does not pop the keyboard up again.
+    const url = new URL(window.location.href);
+    if (url.searchParams.has(SHOP_SEARCH_PARAM)) {
+      url.searchParams.delete(SHOP_SEARCH_PARAM);
+      window.history.replaceState(null, "", url.pathname + url.search);
+    }
   }, [focusSearch]);
 
   const validInitial =
@@ -86,7 +96,7 @@ export function ShopClient({
         <div className="relative max-w-md">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            id="shop-search"
+            id={SHOP_SEARCH_ID}
             ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}

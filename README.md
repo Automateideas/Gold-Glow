@@ -177,8 +177,12 @@ The site can be installed on a phone or computer like an app (Add to Home Screen
 
 On phones (below the `lg` breakpoint) a bottom tab bar ([`components/mobile-bottom-nav.tsx`](components/mobile-bottom-nav.tsx)) gives
 thumb-reach navigation: **Home · Shop · Categories · Contact · Search**. Categories opens a bottom sheet with the 6 categories (plus
-All products and About us); Search opens `/shop?search=1` with the search box focused. The bar slides away while scrolling down and returns on
-scroll up, respects the iPhone home-bar safe area, and is not shown in the admin panel or on desktop.
+All products and About us); Search opens the shop with the search box focused (a temporary input takes focus during the tap so iOS
+Safari opens the keyboard; `?search=1` is removed from the URL afterwards — see [`lib/shop-search.ts`](lib/shop-search.ts)). The bar slides
+away while scrolling down and returns on scroll up (the install popup drops with it), respects the iPhone home-bar safe area, and is not
+shown in the admin panel or on desktop. Toasts and the install popup stay clear of the bar below 1024px through the `--gg-toast-bottom`
+CSS variable and the `.install-popup` rule in `app/globals.css`. The Shop tab also covers product pages. Shared links live in
+[`lib/nav.ts`](lib/nav.ts).
 
 ## 🚀 Deploying to Vercel
 

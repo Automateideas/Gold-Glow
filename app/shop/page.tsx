@@ -3,6 +3,7 @@ import { permanentRedirect } from "next/navigation";
 import { ShopClient } from "@/components/shop-client";
 import { getAllProducts } from "@/lib/catalog";
 import { CATEGORY_PAGES } from "@/lib/categories";
+import { SHOP_SEARCH_PARAM } from "@/lib/shop-search";
 
 export const metadata: Metadata = {
   title: "Shop All Products",
@@ -38,7 +39,7 @@ export default async function ShopPage({
         </p>
       </div>
       <div className="mt-10">
-        <ShopClient initialCategory={sp.category} allProducts={allProducts} focusSearch={sp.search === "1"} />
+        <ShopClient initialCategory={sp.category} allProducts={allProducts} focusSearch={sp[SHOP_SEARCH_PARAM] === "1"} />
       </div>
     </div>
   );

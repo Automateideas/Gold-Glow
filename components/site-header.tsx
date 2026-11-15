@@ -9,6 +9,7 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { BoldText } from "@/components/bold-text";
 import { InstallApp } from "@/components/install-app";
+import { NAV } from "@/lib/nav";
 import type { SiteSettings } from "@/lib/settings";
 import {
   Sheet,
@@ -17,15 +18,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-
-const NAV = [
-  { label: "Shop All", href: "/shop" },
-  { label: "Face Care", href: "/shop/face-wash" },
-  { label: "Body Care", href: "/shop/body-lotion" },
-  { label: "Talc", href: "/shop/talc-powder" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-];
 
 export function SiteHeader({ settings }: { settings: SiteSettings }) {
   const pathname = usePathname();

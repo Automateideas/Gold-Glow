@@ -192,3 +192,27 @@ svg stop {
     display: none;
   }
 }
+
+/* ---- Fixed UI that must clear the phone tab bar (shown below the `lg` breakpoint) ---- */
+:root {
+  --gg-toast-bottom: 1.5rem;
+}
+.install-popup {
+  bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  transition: bottom 0.3s;
+}
+/* The tab bar slides away while scrolling down (it sets data-nav-hidden on <html>). */
+html[data-nav-hidden] .install-popup {
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+@media (max-width: 1023.98px) {
+  :root {
+    --gg-toast-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 1024px) {
+  .install-popup,
+  html[data-nav-hidden] .install-popup {
+    bottom: 1.5rem;
+  }
+}

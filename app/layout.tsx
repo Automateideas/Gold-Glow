@@ -118,7 +118,8 @@ export default async function RootLayout({
         <PwaRegister />
         <Toaster
           position="bottom-right"
-          mobileOffset={{ bottom: "5.5rem" }}
+          offset={{ bottom: "var(--gg-toast-bottom)" }}
+          mobileOffset={{ bottom: "var(--gg-toast-bottom)" }}
           richColors
           toastOptions={{ style: { borderRadius: "14px" } }}
         />
