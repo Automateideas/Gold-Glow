@@ -6,7 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { StarRating } from "@/components/star-rating";
 import { MarketplaceChips } from "@/components/marketplace-buttons";
 
-export function ProductCard({ product }: { product: Product }) {
+/**
+ * `eager`: for cards that are visible without scrolling (the first row of a grid). Their image
+ * can be the page's Largest Contentful Paint, so it must not be lazy-loaded.
+ */
+export function ProductCard({ product, eager = false }: { product: Product; eager?: boolean }) {
   const off =
     product.compareAt && product.compareAt > product.price
       ? Math.round((1 - product.price / product.compareAt) * 100)
@@ -25,6 +29,8 @@ export function ProductCard({ product }: { product: Product }) {
           src={product.images[0]}
           alt={product.name}
           fill
+          loading={eager ? "eager" : undefined}
+          fetchPriority={eager ? "high" : undefined}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-contain p-5 transition-transform duration-500 group-hover:scale-105"
         />

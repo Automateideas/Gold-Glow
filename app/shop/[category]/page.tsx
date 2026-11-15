@@ -126,8 +126,8 @@ export default async function CategoryPage({ params }: Params) {
               {items.length} {items.length === 1 ? "product" : "products"}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-              {items.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {items.map((p, i) => (
+                <ProductCard key={p.id} product={p} eager={i < 4} />
               ))}
             </div>
           </>

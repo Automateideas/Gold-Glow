@@ -19,6 +19,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 ];
 
 const ALL = "All" as const;
+/** Cards in the first row of the grid (4 on wide screens): their images load eagerly. */
+const ABOVE_THE_FOLD_CARDS = 4;
 
 export function ShopClient({
   initialCategory,
@@ -160,8 +162,8 @@ export function ShopClient({
       {/* Grid */}
       {filtered.length > 0 ? (
         <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {filtered.map((p, i) => (
+            <ProductCard key={p.id} product={p} eager={i < ABOVE_THE_FOLD_CARDS} />
           ))}
         </div>
       ) : (

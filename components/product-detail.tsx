@@ -62,7 +62,8 @@ export function ProductDetail({ product }: { product: Product }) {
             src={product.images[active]}
             alt={product.name}
             fill
-            priority
+            loading="eager"
+            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 45vw"
             className="object-contain p-8"
           />

@@ -94,8 +94,8 @@ export function HeroCarousel({
                 src={p.images[0]}
                 alt={`Gold & Glow ${p.name}`}
                 fill
-                priority={i === 0}
-                loading={i === 0 ? undefined : "eager"}
+                loading="eager"
+                fetchPriority={i === 0 ? "high" : undefined}
                 sizes="(max-width: 1024px) 90vw, 40vw"
                 className="object-contain p-10"
               />
